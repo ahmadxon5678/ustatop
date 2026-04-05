@@ -1,0 +1,20 @@
+{
+  "name": "ustatop",
+  "version": "1.0.0",
+  "description": "Usta TOP - Uzbekistan construction workers and materials platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^12.8.0",
+    "connect-sqlite3": "^0.9.16",
+    "dotenv": "^17.3.1",
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "multer": "^1.4.5-lts.1"
+  },
+  "devDependencies": {
+    "jimp": "^1.6.0"
+  }
+}

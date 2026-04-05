@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UstaTOP — Do'kon paneli</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-bg">
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" class="nav-back"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg><span data-lang="home">Bosh sahifa</span></a>
+  </div>
+  <div class="nav-center">
+    <a href="/" class="nav-logo"><img src="/images/logo-wrench.png" alt="UstaTOP" class="nav-logo-icon"><span class="nav-logo-text"><span class="logo-usta">Usta</span><span class="logo-top">TOP</span></span></a>
+  </div>
+  <div class="nav-right">
+    <button class="notif-btn" onclick="toggleNotif()" id="notifBtn"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></button>
+    <div class="lang-toggle">
+      <button class="lang-btn" data-lang="uz" onclick="setLang('uz')">UZ</button>
+      <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+    </div>
+    <button onclick="doLogout()" class="btn btn-sm" style="color:#fff;background:rgba(255,255,255,0.15);border:none">Chiqish</button>
+  </div>
+</nav>
+
+<div id="notifPanel" style="display:none;position:fixed;top:56px;right:12px;width:300px;background:white;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:200;max-height:400px;overflow-y:auto"></div>
+
+<div class="dashboard-hero">
+  <div class="greeting">
+    <span class="greeting-wave">
+      <svg class="wave-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#F07020" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/>
+        <path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"/>
+        <path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/>
+        <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+      </svg>
+    </span>
+    <div>
+      <h2 class="greeting-title">Xush kelibsiz, <span class="greeting-name" id="welcomeSub"></span>!</h2>
+      <p class="greeting-sub">Bugun qanday yordam kerak?</p>
+    </div>
+  </div>
+</div>
+
+<div class="cards-section">
+  <div class="cards-section-inner">
+    <!-- Pending banner -->
+    <div id="pendingBanner" class="new-pending-banner" style="display:none">
+      <span class="new-pending-banner-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F07020" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+      <div class="new-pending-banner-text">
+        <strong>Do'kon arizangiz ko'rib chiqilmoqda</strong>
+        Admin tasdiqlashini kuting. Bu jarayon odatda 24 soat ichida amalga oshiriladi.
+      </div>
+    </div>
+    <!-- Rejected banner -->
+    <div id="rejectedBanner" class="banner-pending" style="display:none;background:#fdf0f0;border-color:#e74c3c;color:#c0392b;border-radius:12px;padding:16px 20px;margin-bottom:20px;align-items:center;gap:12px">
+      <span class="banner-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e74c3c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span>
+      <span>Afsuski, arizangiz rad etildi. Admin bilan bog'laning.</span>
+    </div>
+
+    <!-- Pending cards -->
+    <div id="pendingCards" style="display:none">
+      <div class="stats-bar">
+        <div class="stat-item">
+          <span class="stat-number" id="stat-products">0</span>
+          <span class="stat-label">Mahsulotlar</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-requests">0</span>
+          <span class="stat-label">Buyurtmalar</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number" id="stat-views">0</span>
+          <span class="stat-label">Ko'rishlar</span>
+        </div>
+      </div>
+      <div class="dashboard-cards-container">
+        <div class="dashboard-cards-grid">
+          <div class="dashboard-card" onclick="window.location.href='/workers'">
+            <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#F07020,#FF8C00);box-shadow:0 4px 12px rgba(240,112,32,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+            <div class="dash-card-new-title" data-lang="findWorker">Usta topish</div>
+            <p class="card-description">Malakali ustalarni toping va yollang</p>
+            <span class="dash-card-new-arrow">→</span>
+          </div>
+          <div class="dashboard-card" onclick="window.location.href='/marketplace'">
+            <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#3498db,#2980b9);box-shadow:0 4px 12px rgba(52,152,219,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+            <div class="dash-card-new-title" data-lang="marketplace">Materiallar bozori</div>
+            <p class="card-description">Qurilish materiallarini ko'ring</p>
+            <span class="dash-card-new-arrow">→</span>
+          </div>
+          <div class="dashboard-card" onclick="openJobModal()">
+            <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 12px rgba(34,197,94,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg></div>
+            <div class="dash-card-new-title" data-lang="jobRequest">Buyurtma berish</div>
+            <p class="card-description">Yangi ish e'loni joylashtiring</p>
+            <span class="dash-card-new-arrow">→</span>
+          </div>
+          <div class="dashboard-card" onclick="showSection('myRequests')">
+            <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 4px 12px rgba(139,92,246,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+            <div class="dash-card-new-title" data-lang="myRequests">Mening buyurtmalarim</div>
+            <p class="card-description">Joriy e'lonlaringizni ko'ring</p>
+            <span class="dash-card-new-arrow">→</span>
+          </div>
+          <div class="dashboard-card" onclick="showSection('bookmarks')">
+            <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#ef4444,#b91c1c);box-shadow:0 4px 12px rgba(239,68,68,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+            <div class="dash-card-new-title" data-lang="savedWorkers">Sevimli ustalar</div>
+            <p class="card-description">Saqlangan ustalaringiz</p>
+            <span class="dash-card-new-arrow">→</span>
+          </div>
+          <div class="dashboard-card" onclick="showSection('profile')">
+            <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#1a1a2e,#2d3748);box-shadow:0 4px 12px rgba(26,26,46,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+            <div class="dash-card-new-title" data-lang="myProfile">Mening profilim</div>
+            <p class="card-description">Ma'lumotlaringizni tahrirlang</p>
+            <span class="dash-card-new-arrow">→</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Approved cards -->
+    <div id="approvedCards" style="display:none">
+      <div class="dashboard-cards-container">
+        <!-- Shop section FIRST (top) -->
+        <div class="section-block">
+          <div class="section-header">
+            <span class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F07020" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></span>
+            <span class="section-title worker-title">Do'kon imkoniyatlari</span>
+            <div class="section-line"></div>
+          </div>
+          <div class="section-cards-grid">
+            <div class="worker-feature-card" onclick="showSection('shopProfile')">
+              <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#F07020,#FF8C00);box-shadow:0 4px 12px rgba(240,112,32,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>
+              <div class="dash-card-new-title" data-lang="myShop">Mening do'konim</div>
+              <p class="card-description">Do'kon profilingizni boshqaring</p>
+              <span class="dash-card-new-arrow">→</span>
+            </div>
+            <div class="worker-feature-card" onclick="openAddProduct()">
+              <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 12px rgba(34,197,94,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg></div>
+              <div class="dash-card-new-title" data-lang="addProduct">Mahsulot qo'shish</div>
+              <p class="card-description">Yangi mahsulot joylang</p>
+              <span class="dash-card-new-arrow">→</span>
+            </div>
+            <div class="worker-feature-card" onclick="showSection('myProducts')">
+              <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);box-shadow:0 4px 12px rgba(59,130,246,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"/><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg></div>
+              <div class="dash-card-new-title" data-lang="myProducts">Mening mahsulotlarim</div>
+              <p class="card-description">Mahsulotlar ro'yxatini ko'ring</p>
+              <span class="dash-card-new-arrow">→</span>
+            </div>
+          </div>
+        </div>
+        <!-- General section SECOND (bottom) -->
+        <div class="section-block" style="margin-top:32px">
+          <div class="section-header">
+            <span class="section-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+            <span class="section-title general-title">Umumiy imkoniyatlar</span>
+            <div class="section-line"></div>
+          </div>
+          <div class="section-cards-grid">
+            <div class="general-feature-card" onclick="window.location.href='/workers'">
+              <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#F07020,#FF8C00);box-shadow:0 4px 12px rgba(240,112,32,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
+              <div class="dash-card-new-title" data-lang="findWorker">Usta topish</div>
+              <p class="card-description">Malakali ustalarni toping va yollang</p>
+              <span class="dash-card-new-arrow">→</span>
+            </div>
+            <div class="general-feature-card" onclick="window.location.href='/marketplace'">
+              <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);box-shadow:0 4px 12px rgba(59,130,246,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+              <div class="dash-card-new-title" data-lang="marketplace">Materiallar bozori</div>
+              <p class="card-description">Qurilish materiallarini ko'ring</p>
+              <span class="dash-card-new-arrow">→</span>
+            </div>
+            <div class="general-feature-card" onclick="openJobModal()">
+              <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 12px rgba(34,197,94,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg></div>
+              <div class="dash-card-new-title" data-lang="jobRequest">Buyurtma berish</div>
+              <p class="card-description">Yangi ish e'loni joylashtiring</p>
+              <span class="dash-card-new-arrow">→</span>
+            </div>
+            <div class="general-feature-card" onclick="showSection('myRequests')">
+              <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 4px 12px rgba(139,92,246,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
+              <div class="dash-card-new-title" data-lang="myRequests">Mening buyurtmalarim</div>
+              <p class="card-description">Joriy e'lonlaringizni ko'ring</p>
+              <span class="dash-card-new-arrow">→</span>
+            </div>
+            <div class="general-feature-card" onclick="showSection('bookmarks')">
+              <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#ef4444,#b91c1c);box-shadow:0 4px 12px rgba(239,68,68,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
+              <div class="dash-card-new-title" data-lang="savedWorkers">Sevimli ustalar</div>
+              <p class="card-description">Saqlangan ustalaringiz</p>
+              <span class="dash-card-new-arrow">→</span>
+            </div>
+            <div class="general-feature-card" onclick="showSection('profile')">
+              <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#1a1a2e,#2d3748);box-shadow:0 4px 12px rgba(26,26,46,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+              <div class="dash-card-new-title" data-lang="myProfile">Mening profilim</div>
+              <p class="card-description">Ma'lumotlaringizni tahrirlang</p>
+              <span class="dash-card-new-arrow">→</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="contentArea" style="padding:24px 20px 100px;max-width:800px;margin:0 auto"></div>
+
+<!-- Add/Edit Product Modal -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal" style="max-width:500px">
+    <button class="modal-close" onclick="closeModal('productModal')">✕</button>
+    <div class="modal-title" id="productModalTitle" data-lang="addProduct">Mahsulot qo'shish</div>
+    <input type="hidden" id="editProductId">
+    <div class="form-group">
+      <label class="form-label" data-lang="productName">Mahsulot nomi *</label>
+      <input class="form-input" type="text" id="pName">
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" data-lang="price">Narx (so'm) *</label>
+        <input class="form-input" type="number" id="pPrice" placeholder="85000">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-lang="productType">Turi</label>
+        <select class="form-select" id="pType">
+          <option value="" data-lang="selectOption">Tanlang</option>
+          <option>Sement</option><option>G'isht</option><option>Bo'yoq</option>
+          <option>Plitka</option><option>Qum</option><option>Shag'al</option>
+          <option>Yog'och</option><option>Temir</option><option>Shifer</option><option>Boshqa</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-lang="phone">Telefon</label>
+      <input class="form-input" type="tel" id="pPhone" data-phone placeholder="+998 90 000 00 00">
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-lang="description">Tavsif</label>
+      <textarea class="form-input" id="pDesc" rows="3"></textarea>
+    </div>
+    <div class="auth-error" id="productError"></div>
+    <button class="btn btn-primary btn-full" onclick="saveProduct()" data-lang="save">Saqlash</button>
+  </div>
+</div>
+
+<!-- Job Request Modal -->
+<div class="modal-overlay" id="jobModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('jobModal')">✕</button>
+    <div class="modal-title" data-lang="jobRequest">Buyurtma berish</div>
+    <div class="form-group"><label class="form-label"><span data-lang="titleLabel">Sarlavha</span> *</label><input class="form-input" type="text" id="jrTitle"></div>
+    <div class="form-group"><label class="form-label" data-lang="description">Tavsif</label><textarea class="form-input" id="jrDesc" rows="3"></textarea></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label" data-lang="profession">Kasb</label>
+        <select class="form-select" id="jrProfession">
+          <option value="" data-lang="selectOption">Tanlang</option>
+          <option>Elektrik</option><option>Santexnik</option><option>Quruvchi</option>
+          <option>Bo'yoqchi</option><option>Plitkachi</option><option>Duradgor</option>
+          <option>Temirchi</option><option>Krovec</option><option>Gipschi</option>
+          <option>Dizayner</option><option>Boshqa</option>
+        </select></div>
+      <div class="form-group"><label class="form-label" data-lang="region">Viloyat</label>
+        <select class="form-select" id="jrRegion">
+          <option value="" data-lang="selectOption">Tanlang</option>
+          <option>Toshkent</option><option>Andijon</option><option>Farg'ona</option>
+          <option>Namangan</option><option>Samarqand</option><option>Buxoro</option>
+          <option>Xorazm</option><option>Qashqadaryo</option><option>Surxondaryo</option>
+          <option>Jizzax</option><option>Sirdaryo</option><option>Navoiy</option>
+          <option>Qoraqalpog'iston</option>
+        </select></div>
+    </div>
+    <div class="form-group"><label class="form-label" data-lang="phone">Telefon *</label><input class="form-input" type="tel" id="jrPhone" data-phone placeholder="+998 90 000 00 00"></div>
+    <div style="margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;color:#1a1a2e">
+        <input type="checkbox" id="jrUrgent" style="width:18px;height:18px;accent-color:#e74c3c">
+        <span>🔴 Shoshilinch ish</span>
+      </label>
+      <p style="font-size:12px;color:#888;margin:4px 0 0 28px">Shoshilinch ishlar ustalar tomonidan birinchi ko'riladi</p>
+    </div>
+    <div id="jrBudgetSection" style="display:none;margin-bottom:16px;padding:14px;background:#fff8f3;border-radius:10px;border:1px solid rgba(240,112,32,0.2)">
+      <label style="font-size:13px;font-weight:600;color:#1a1a2e;display:block;margin-bottom:10px">💰 Taxminiy byudjet (ixtiyoriy)</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="number" id="jrBudgetFrom" placeholder="Dan (so'm)" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+        <span style="color:#888">—</span>
+        <input type="number" id="jrBudgetTo" placeholder="Gacha (so'm)" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+      </div>
+    </div>
+    <div class="auth-error" id="jrError"></div>
+    <button class="btn btn-primary btn-full" onclick="submitJobRequest()" data-lang="send">Yuborish</button>
+  </div>
+</div>
+
+<script src="/js/lang.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/dashboard-shop.js"></script>
+</body>
+</html>

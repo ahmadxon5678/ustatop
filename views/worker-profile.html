@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UstaTOP — Usta profili</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-left">
+    <button class="nav-back" onclick="history.back()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span data-lang="back">Orqaga</span>
+    </button>
+  </div>
+  <div class="nav-center">
+    <a href="/" class="nav-logo"><img src="/images/logo-wrench.png" alt="UstaTOP" class="nav-logo-icon"><span class="nav-logo-text"><span class="logo-usta">Usta</span><span class="logo-top">TOP</span></span></a>
+  </div>
+  <div class="nav-right">
+    <div id="notifArea"></div>
+    <div class="lang-toggle">
+      <button class="lang-btn" data-lang="uz" onclick="setLang('uz')">UZ</button>
+      <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+    </div>
+    <div id="navUser"></div>
+  </div>
+</nav>
+
+<div id="profileContent">
+  <div class="loading-center"><div class="spinner"></div></div>
+</div>
+
+<!-- Calendar Modal -->
+<div class="modal-overlay" id="calendarModal">
+  <div class="modal wp-cal-modal">
+    <button class="modal-close" onclick="closeModal('calendarModal')">✕</button>
+    <div class="wp-cal-header">
+      <button class="wp-cal-nav" onclick="changeCalMonth(-1)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <span id="calTitle" class="wp-cal-title"></span>
+      <button class="wp-cal-nav" onclick="changeCalMonth(1)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+    </div>
+    <div id="calendarBody"></div>
+    <div class="wp-cal-legend">
+      <span class="wp-cal-legend-item avail"><span class="wp-cal-dot avail"></span>Bo'sh</span>
+      <span class="wp-cal-legend-item busy"><span class="wp-cal-dot busy"></span>Band</span>
+      <span class="wp-cal-legend-item neutral"><span class="wp-cal-dot neutral"></span>Ma'lumot yo'q</span>
+    </div>
+  </div>
+</div>
+
+<!-- Rate Modal -->
+<div class="modal-overlay" id="rateModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('rateModal')">✕</button>
+    <div class="modal-title" data-lang="rate">Baholash</div>
+    <div class="form-group">
+      <label class="form-label" data-lang="stars">Yulduzlar</label>
+      <div class="stars-input" id="starsInput">
+        <span class="star" data-v="1" onclick="setStar(1)">★</span>
+        <span class="star" data-v="2" onclick="setStar(2)">★</span>
+        <span class="star" data-v="3" onclick="setStar(3)">★</span>
+        <span class="star" data-v="4" onclick="setStar(4)">★</span>
+        <span class="star" data-v="5" onclick="setStar(5)">★</span>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-lang="reviewWrite">Sharh</label>
+      <textarea class="form-input" id="reviewText" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" data-lang="reviewPhoto">Rasm (ixtiyoriy)</label>
+      <input type="file" id="reviewPhoto" accept="image/*" class="form-input" style="padding:8px">
+    </div>
+    <div class="auth-error" id="rateError"></div>
+    <button class="btn btn-primary btn-full" onclick="submitRating()" data-lang="submitRating">Yuborish</button>
+  </div>
+</div>
+
+<script src="/js/lang.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/worker-profile.js"></script>
+</body>
+</html>

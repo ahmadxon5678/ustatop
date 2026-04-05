@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UstaTOP — Ustalar</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/fuse.js/dist/fuse.min.js"></script>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-left">
+    <button class="nav-back" onclick="history.back()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      <span data-lang="back">Orqaga</span>
+    </button>
+  </div>
+  <div class="nav-center">
+    <a href="/" class="nav-logo"><img src="/images/logo-wrench.png" alt="UstaTOP" class="nav-logo-icon"><span class="nav-logo-text"><span class="logo-usta">Usta</span><span class="logo-top">TOP</span></span></a>
+  </div>
+  <div class="nav-right">
+    <div id="notifArea"></div>
+    <div class="lang-toggle">
+      <button class="lang-btn" data-lang="uz" onclick="setLang('uz')">UZ</button>
+      <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+    </div>
+    <div id="navUser"></div>
+  </div>
+</nav>
+
+<div class="wkr-page">
+
+  <!-- ── Command Center ── -->
+  <div class="wkr-command-center">
+
+    <!-- Quick-filter pills -->
+    <div class="wkr-pills-row">
+      <button class="wkr-pill active" id="filter-all" onclick="setQuickFilter('all')">
+        <span class="wkr-pill-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </span>
+        Barchasi
+      </button>
+      <button class="wkr-pill" id="filter-my-city" onclick="setQuickFilter('myCity')">
+        <span class="wkr-pill-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+        Mening shahrim
+      </button>
+      <label class="wkr-pill" id="pill-verified" for="filterVerified">
+        <span class="wkr-pill-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+        </span>
+        <input type="checkbox" id="filterVerified" onchange="onVerifiedChange()" style="display:none">
+        Faqat tekshirilgan
+      </label>
+    </div>
+
+    <!-- Search + dropdowns -->
+    <div class="wkr-search-row">
+      <div class="wkr-search-box">
+        <span class="wkr-search-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </span>
+        <input class="wkr-search-input" type="text" id="searchInput" data-lang-placeholder="search" placeholder="Usta qidirish..." oninput="applyFilters()">
+      </div>
+      <div class="wkr-select-wrap">
+        <span class="wkr-select-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </span>
+        <select class="wkr-select" id="filterRegion" onchange="applyFilters()">
+          <option value="" data-lang="allRegions">Barcha viloyatlar</option>
+          <option>Toshkent</option><option>Andijon</option><option>Farg'ona</option>
+          <option>Namangan</option><option>Samarqand</option><option>Buxoro</option>
+          <option>Xorazm</option><option>Qashqadaryo</option><option>Surxondaryo</option>
+          <option>Jizzax</option><option>Sirdaryo</option><option>Navoiy</option>
+          <option>Qoraqalpog'iston</option>
+        </select>
+      </div>
+      <div class="wkr-select-wrap">
+        <span class="wkr-select-icon">
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </span>
+        <select class="wkr-select" id="filterProfession" onchange="applyFilters()">
+          <option value="" data-lang="allProfessions">Barcha kasblar</option>
+          <option>Elektrik</option><option>Santexnik</option><option>Quruvchi</option>
+          <option>Bo'yoqchi</option><option>Plitkachi</option><option>Duradgor</option>
+          <option>Temirchi</option><option>Krovec</option><option>Gipschi</option>
+          <option>Dizayner</option><option>Boshqa</option>
+        </select>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Workers output ── -->
+  <div class="wkr-grid-wrap" id="workersGrid">
+    <div class="loading-center"><div class="spinner"></div></div>
+  </div>
+
+</div>
+
+<script src="/js/lang.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/fuzzy-search.js"></script>
+<script src="/js/workers.js"></script>
+</body>
+</html>

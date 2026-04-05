@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UstaTOP — Admin</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="stylesheet" href="/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body class="admin-body">
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" class="nav-logo"><img src="/images/logo-wrench.png" alt="UstaTOP" class="nav-logo-icon"><span class="nav-logo-text"><span class="logo-usta">Usta</span><span class="logo-top">TOP</span></span></a>
+  </div>
+  <div class="nav-center">
+    <span class="admin-nav-badge">🛡️ Admin Panel</span>
+  </div>
+  <div class="nav-right">
+    <button onclick="doLogout()" class="btn btn-sm" style="color:#fff;background:rgba(255,255,255,0.15);border:none">⬡ Chiqish</button>
+  </div>
+</nav>
+
+<div class="admin-layout">
+  <!-- Sidebar -->
+  <aside class="admin-sidebar">
+    <div class="admin-sidebar-header">
+      <div class="admin-sidebar-brand">
+        <div class="admin-sidebar-icon-wrap">🛡️</div>
+        <div>
+          <div class="admin-sidebar-title">Admin Panel</div>
+          <div class="admin-sidebar-sub">UstaTOP boshqaruv</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="admin-sidebar-stats" id="sidebarStats">
+      <div class="admin-stat">
+        <span>Foydalanuvchilar</span>
+        <span class="admin-stat-val" id="stUsers">—</span>
+      </div>
+      <div class="admin-stat">
+        <span>Ustalar</span>
+        <span class="admin-stat-val" id="stWorkers">—</span>
+      </div>
+      <div class="admin-stat">
+        <span>Do'konlar</span>
+        <span class="admin-stat-val" id="stShops">—</span>
+      </div>
+      <div class="admin-stat">
+        <span>Mahsulotlar</span>
+        <span class="admin-stat-val" id="stProducts">—</span>
+      </div>
+    </div>
+
+    <nav class="admin-nav">
+      <div class="admin-nav-section-label">Asosiy</div>
+      <button class="admin-sidebar-btn active" onclick="showTab('overview')">
+        <span class="admin-nav-icon">📊</span>Umumiy ko'rinish
+      </button>
+      <button class="admin-sidebar-btn" onclick="showTab('users')">
+        <span class="admin-nav-icon">👤</span>Foydalanuvchilar
+      </button>
+
+      <div class="admin-nav-section-label">Arizalar</div>
+      <button class="admin-sidebar-btn" onclick="showTab('wsubs')">
+        <span class="admin-nav-icon">🔨</span>Usta arizalari
+        <span class="sidebar-badge" id="badgeWsubs" style="display:none">0</span>
+      </button>
+      <button class="admin-sidebar-btn" onclick="showTab('ssubs')">
+        <span class="admin-nav-icon">🏪</span>Do'kon arizalari
+        <span class="sidebar-badge" id="badgeSsubs" style="display:none">0</span>
+      </button>
+
+      <div class="admin-nav-section-label">Ma'lumotlar</div>
+      <button class="admin-sidebar-btn" onclick="showTab('workers')">
+        <span class="admin-nav-icon">⚒️</span>Ustalar
+      </button>
+      <button class="admin-sidebar-btn" onclick="showTab('products')">
+        <span class="admin-nav-icon">📦</span>Mahsulotlar
+      </button>
+      <button class="admin-sidebar-btn" onclick="showTab('jobreqs')">
+        <span class="admin-nav-icon">📋</span>Buyurtmalar
+      </button>
+      <button class="admin-sidebar-btn" onclick="showTab('ratings')">
+        <span class="admin-nav-icon">⭐</span>Sharhlar
+      </button>
+      <button class="admin-sidebar-btn" onclick="showTab('responses')">
+        <span class="admin-nav-icon">💬</span>Javoblar
+      </button>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="admin-main">
+    <div id="adminContent"><div class="loading-center"><div class="spinner"></div></div></div>
+  </main>
+</div>
+
+<!-- Worker Modal -->
+<div class="modal-overlay" id="workerModal">
+  <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('workerModal')">✕</button>
+    <div class="modal-title" id="workerModalTitle">Usta qo'shish</div>
+    <input type="hidden" id="wEditId">
+    <div class="form-group"><label class="form-label"><span data-lang="name">Ism</span> *</label><input class="form-input" type="text" id="wName"></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label"><span data-lang="profession">Kasb</span> *</label>
+        <select class="form-select" id="wProf">
+          <option value="" data-lang="selectOption">Tanlang</option>
+          <option>Elektrik</option><option>Santexnik</option><option>Quruvchi</option>
+          <option>Bo'yoqchi</option><option>Plitkachi</option><option>Duradgor</option>
+          <option>Temirchi</option><option>Krovec</option><option>Gipschi</option>
+          <option>Dizayner</option><option>Boshqa</option>
+        </select></div>
+      <div class="form-group"><label class="form-label" data-lang="experience">Tajriba</label><input class="form-input" type="text" id="wExp" placeholder="5 yil"></div>
+    </div>
+    <div class="form-group"><label class="form-label" data-lang="description">Tavsif</label><textarea class="form-input" id="wDesc" rows="3"></textarea></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label" data-lang="region">Viloyat</label>
+        <select class="form-select" id="wRegion">
+          <option value="" data-lang="selectOption">Tanlang</option>
+          <option>Toshkent</option><option>Andijon</option><option>Farg'ona</option>
+          <option>Namangan</option><option>Samarqand</option><option>Buxoro</option>
+          <option>Xorazm</option><option>Qashqadaryo</option><option>Surxondaryo</option>
+          <option>Jizzax</option><option>Sirdaryo</option><option>Navoiy</option>
+          <option>Qoraqalpog'iston</option>
+        </select></div>
+      <div class="form-group"><label class="form-label" data-lang="city">Shahar</label><input class="form-input" type="text" id="wCity"></div>
+    </div>
+    <div class="form-group"><label class="form-label" data-lang="phone">Telefon</label><input class="form-input" type="tel" id="wPhone" data-phone placeholder="+998 90 000 00 00"></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label">Telegram</label><input class="form-input" type="text" id="wTelegram" placeholder="@username"></div>
+      <div class="form-group"><label class="form-label">Instagram</label><input class="form-input" type="text" id="wInstagram" placeholder="@username"></div>
+    </div>
+    <div class="form-group"><label class="form-label"><span data-lang="rating">Reyting</span> (0-5)</label><input class="form-input" type="number" id="wRating" min="0" max="5" step="0.1" placeholder="4.5"></div>
+    <div class="auth-error" id="wError"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('workerModal')" data-lang="cancel">Bekor</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveWorker()" data-lang="save">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- Product Modal -->
+<div class="modal-overlay" id="productModal">
+  <div class="modal" style="max-width:500px">
+    <button class="modal-close" onclick="closeModal('productModal')">✕</button>
+    <div class="modal-title" id="productModalTitle">Mahsulot qo'shish</div>
+    <input type="hidden" id="pEditId">
+    <div class="form-group"><label class="form-label"><span data-lang="productName">Mahsulot nomi</span> *</label><input class="form-input" type="text" id="pName"></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label"><span data-lang="price">Narx</span> *</label><input class="form-input" type="number" id="pPrice"></div>
+      <div class="form-group"><label class="form-label" data-lang="productType">Turi</label>
+        <select class="form-select" id="pType">
+          <option value="" data-lang="selectOption">Tanlang</option>
+          <option>Sement</option><option>G'isht</option><option>Bo'yoq</option>
+          <option>Plitka</option><option>Qum</option><option>Shag'al</option>
+          <option>Yog'och</option><option>Temir</option><option>Shifer</option><option>Boshqa</option>
+        </select></div>
+    </div>
+    <div class="form-group"><label class="form-label" data-lang="seller">Sotuvchi</label><input class="form-input" type="text" id="pSeller"></div>
+    <div class="form-group"><label class="form-label" data-lang="phone">Telefon</label><input class="form-input" type="tel" id="pPhone" data-phone placeholder="+998 90 000 00 00"></div>
+    <div class="form-group"><label class="form-label" data-lang="description">Tavsif</label><textarea class="form-input" id="pDesc" rows="3"></textarea></div>
+    <div class="auth-error" id="pError"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('productModal')" data-lang="cancel">Bekor</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveProduct()" data-lang="save">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast-container" style="position:fixed;bottom:24px;right:24px;z-index:9999"></div>
+
+<script src="/js/lang.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/admin.js"></script>
+</body>
+</html>

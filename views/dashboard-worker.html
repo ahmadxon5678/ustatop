@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UstaTOP — Usta paneli</title>
+  <link rel="icon" type="image/png" href="/images/favicon.png">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body class="dashboard-bg">
+<nav class="navbar">
+  <div class="nav-left">
+    <a href="/" class="nav-back">
+      <svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span data-lang="home">Bosh sahifa</span>
+    </a>
+  </div>
+  <div class="nav-center">
+    <a href="/" class="nav-logo"><img src="/images/logo-wrench.png" alt="UstaTOP" class="nav-logo-icon"><span class="nav-logo-text"><span class="logo-usta">Usta</span><span class="logo-top">TOP</span></span></a>
+  </div>
+  <div class="nav-right">
+    <button class="notif-btn" onclick="toggleNotif()" id="notifBtn">🔔</button>
+    <div class="lang-toggle">
+      <button class="lang-btn" data-lang="uz" onclick="setLang('uz')">UZ</button>
+      <button class="lang-btn" data-lang="ru" onclick="setLang('ru')">RU</button>
+    </div>
+    <button onclick="doLogout()" class="btn btn-sm" style="color:#fff;background:rgba(255,255,255,0.15);border:none">Chiqish</button>
+  </div>
+</nav>
+
+<div id="notifPanel" style="display:none;position:fixed;top:56px;right:12px;width:300px;background:white;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,0.15);z-index:200;max-height:400px;overflow-y:auto"></div>
+
+<div class="dashboard-hero">
+  <div class="greeting">
+    <span class="greeting-wave">
+      <svg class="wave-icon" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#F07020" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2"/>
+        <path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v2"/>
+        <path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/>
+        <path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>
+      </svg>
+    </span>
+    <div>
+      <h2 class="greeting-title">Xush kelibsiz, <span class="greeting-name" id="welcomeSub"></span>!</h2>
+      <p class="greeting-sub">Bugun qanday yordam kerak?</p>
+    </div>
+  </div>
+  <div id="approvedBadge" style="display:none;margin-top:12px;position:relative;z-index:1">
+    <span class="badge badge-approved" data-lang="approvedWorker">✓ Tasdiqlangan usta</span>
+  </div>
+</div>
+
+<div class="cards-section">
+  <div class="cards-section-inner">
+    <!-- Pending banner -->
+    <div id="pendingBanner" class="new-pending-banner" style="display:none">
+      <span class="new-pending-banner-icon" style="display:flex;color:#F07020"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+      <div class="new-pending-banner-text">
+        <strong>Arizangiz ko'rib chiqilmoqda</strong>
+        Admin tasdiqlashini kuting. Bu jarayon odatda 24 soat ichida amalga oshiriladi.
+      </div>
+    </div>
+    <!-- Rejected banner -->
+    <div id="rejectedBanner" class="banner-pending" style="display:none;background:#fdf0f0;border:1.5px solid #fca5a5;color:#c0392b;border-radius:14px;padding:16px 20px;margin-bottom:20px;align-items:center;gap:12px">
+      <span style="display:flex;flex-shrink:0"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></span>
+      <span>Afsuski, arizangiz rad etildi. Admin bilan bog'laning.</span>
+    </div>
+    <!-- Stats bar -->
+    <div class="stats-bar" id="workerStatsBar" style="display:none">
+      <div class="stat-item">
+        <span class="stat-number" id="stat-responses">0</span>
+        <span class="stat-label">Buyurtmalar</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number" id="stat-reviews">0</span>
+        <span class="stat-label">Sharhlar</span>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-item">
+        <span class="stat-number" id="stat-portfolio">0</span>
+        <span class="stat-label">Portfolio</span>
+      </div>
+    </div>
+    <!-- Cards grid — filled entirely by JS based on approval state -->
+    <div class="dashboard-cards-container">
+      <div id="dashCards" class="dashboard-cards-grid"></div>
+    </div>
+  </div>
+</div>
+
+<div id="contentArea" style="padding:24px 20px 100px;max-width:800px;margin:0 auto"></div>
+
+<!-- ── Job Request Modal (customer feature, both states) ── -->
+<div class="modal-overlay" id="jobModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('jobModal')">✕</button>
+    <div class="modal-title" data-lang="jobRequest">Buyurtma berish</div>
+    <div class="form-group"><label class="form-label"><span data-lang="titleLabel">Sarlavha</span> *</label><input class="form-input" type="text" id="jrTitle"></div>
+    <div class="form-group"><label class="form-label" data-lang="description">Tavsif</label><textarea class="form-input" id="jrDesc" rows="3"></textarea></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label" data-lang="profession">Kasb</label>
+        <select class="form-select" id="jrProfession">
+          <option value="" data-lang="selectOption">Tanlang</option>
+          <option>Elektrik</option><option>Santexnik</option><option>Quruvchi</option>
+          <option>Bo'yoqchi</option><option>Plitkachi</option><option>Duradgor</option>
+          <option>Temirchi</option><option>Krovec</option><option>Gipschi</option>
+          <option>Dizayner</option><option>Boshqa</option>
+        </select></div>
+      <div class="form-group"><label class="form-label" data-lang="region">Viloyat</label>
+        <select class="form-select" id="jrRegion">
+          <option value="" data-lang="selectOption">Tanlang</option>
+          <option>Toshkent</option><option>Andijon</option><option>Farg'ona</option>
+          <option>Namangan</option><option>Samarqand</option><option>Buxoro</option>
+          <option>Xorazm</option><option>Qashqadaryo</option><option>Surxondaryo</option>
+          <option>Jizzax</option><option>Sirdaryo</option><option>Navoiy</option>
+          <option>Qoraqalpog'iston</option>
+        </select></div>
+    </div>
+    <div class="form-group"><label class="form-label" data-lang="phone">Telefon *</label><input class="form-input" type="tel" id="jrPhone" data-phone placeholder="+998 90 000 00 00"></div>
+    <div style="margin-bottom:16px">
+      <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;color:#1a1a2e">
+        <input type="checkbox" id="jrUrgent" style="width:18px;height:18px;accent-color:#e74c3c">
+        <span>🔴 Shoshilinch ish</span>
+      </label>
+      <p style="font-size:12px;color:#888;margin:4px 0 0 28px">Shoshilinch ishlar ustalar tomonidan birinchi ko'riladi</p>
+    </div>
+    <div id="jrBudgetSection" style="display:none;margin-bottom:16px;padding:14px;background:#fff8f3;border-radius:10px;border:1px solid rgba(240,112,32,0.2)">
+      <label style="font-size:13px;font-weight:600;color:#1a1a2e;display:block;margin-bottom:10px">💰 Taxminiy byudjet (ixtiyoriy)</label>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input type="number" id="jrBudgetFrom" placeholder="Dan (so'm)" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+        <span style="color:#888">—</span>
+        <input type="number" id="jrBudgetTo" placeholder="Gacha (so'm)" style="flex:1;padding:8px 12px;border:1px solid #ddd;border-radius:8px;font-size:14px">
+      </div>
+    </div>
+    <div class="auth-error" id="jrError"></div>
+    <button class="btn btn-primary btn-full" onclick="submitJobRequest()" data-lang="send">Yuborish</button>
+  </div>
+</div>
+
+<!-- ── Respond Modal (approved workers only) ── -->
+<div class="modal-overlay" id="respondModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('respondModal')">✕</button>
+    <div class="modal-title" data-lang="respond">Javob berish</div>
+    <div id="respondJobInfo" style="background:#f8f9fa;border-radius:8px;padding:12px;margin-bottom:16px;font-size:0.88rem"></div>
+    <div class="form-group">
+      <label class="form-label"><span data-lang="messageLabel">Xabar</span> *</label>
+      <textarea class="form-input" id="respondMsg" rows="4"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-group">
+        <label class="form-label" data-lang="priceFrom">Narx (dan)</label>
+        <input class="form-input" id="respondPriceFrom" type="number" min="0" placeholder="so'm">
+      </div>
+      <div class="form-group">
+        <label class="form-label" data-lang="priceTo">Narx (gacha)</label>
+        <input class="form-input" id="respondPriceTo" type="number" min="0" placeholder="so'm">
+      </div>
+    </div>
+    <div class="auth-error" id="respondError"></div>
+    <button class="btn btn-primary btn-full" onclick="submitResponse()" data-lang="send">Yuborish</button>
+  </div>
+</div>
+
+<!-- ── Basic Profile Modal (both states — name, phone readonly, region, city) ── -->
+<div class="modal-overlay" id="profileModal">
+  <div class="modal" style="max-width:440px">
+    <button class="modal-close" onclick="closeModal('profileModal')">✕</button>
+    <div class="modal-title" data-lang="myProfile">Mening profilim</div>
+    <div class="form-group"><label class="form-label" data-lang="fullName">To'liq ism</label><input class="form-input" type="text" id="ppName"></div>
+    <div class="form-group"><label class="form-label" data-lang="phone">Telefon</label><input class="form-input" id="ppPhone" readonly style="background:#f8f9fa;color:#999"></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label" data-lang="region">Viloyat</label>
+        <select class="form-select" id="ppRegion">
+          <option>Toshkent</option><option>Andijon</option><option>Farg'ona</option>
+          <option>Namangan</option><option>Samarqand</option><option>Buxoro</option>
+          <option>Xorazm</option><option>Qashqadaryo</option><option>Surxondaryo</option>
+          <option>Jizzax</option><option>Sirdaryo</option><option>Navoiy</option>
+          <option>Qoraqalpog'iston</option>
+        </select></div>
+      <div class="form-group"><label class="form-label" data-lang="city">Shahar</label><input class="form-input" type="text" id="ppCity"></div>
+    </div>
+    <div class="auth-error" id="ppError"></div>
+    <button class="btn btn-primary btn-full" onclick="saveBasicProfile()" data-lang="save">Saqlash</button>
+  </div>
+</div>
+
+<!-- ── Worker Resume Modal (approved only — all worker fields) ── -->
+<div class="modal-overlay" id="resumeModal">
+  <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('resumeModal')">✕</button>
+    <div class="modal-title" data-lang="myResume">Mening rezyumem</div>
+    <div class="form-group"><label class="form-label" data-lang="fullName">To'liq ism *</label><input class="form-input" type="text" id="rmName"></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label" data-lang="profession">Kasb</label>
+        <select class="form-select" id="rmProf">
+          <option>Elektrik</option><option>Santexnik</option><option>Quruvchi</option>
+          <option>Bo'yoqchi</option><option>Plitkachi</option><option>Duradgor</option>
+          <option>Temirchi</option><option>Krovec</option><option>Gipschi</option>
+          <option>Dizayner</option><option>Boshqa</option>
+        </select></div>
+      <div class="form-group"><label class="form-label" data-lang="experience">Tajriba</label>
+        <select class="form-select" id="rmExp">
+          <option value="1 yildan kam">1 yildan kam</option>
+          <option value="1-2 yil">1-2 yil</option>
+          <option value="3-5 yil">3-5 yil</option>
+          <option value="6-10 yil">6-10 yil</option>
+          <option value="10+ yil">10+ yil</option>
+        </select></div>
+    </div>
+    <div class="form-group"><label class="form-label" data-lang="description">Tavsif</label><textarea class="form-input" id="rmDesc" rows="3"></textarea></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label" data-lang="region">Viloyat</label>
+        <select class="form-select" id="rmRegion">
+          <option>Toshkent</option><option>Andijon</option><option>Farg'ona</option>
+          <option>Namangan</option><option>Samarqand</option><option>Buxoro</option>
+          <option>Xorazm</option><option>Qashqadaryo</option><option>Surxondaryo</option>
+          <option>Jizzax</option><option>Sirdaryo</option><option>Navoiy</option>
+          <option>Qoraqalpog'iston</option>
+        </select></div>
+      <div class="form-group"><label class="form-label" data-lang="city">Shahar</label><input class="form-input" type="text" id="rmCity"></div>
+    </div>
+    <div class="form-group"><label class="form-label" data-lang="phone">Telefon</label><input class="form-input" type="tel" id="rmPhone" data-phone placeholder="+998 90 000 00 00"></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label">Telegram</label><input class="form-input" type="text" id="rmTelegram" placeholder="@username"></div>
+      <div class="form-group"><label class="form-label">Instagram</label><input class="form-input" type="text" id="rmInstagram" placeholder="@username"></div>
+    </div>
+    <div class="auth-error" id="rmError"></div>
+    <button class="btn btn-primary btn-full" onclick="saveWorkerResume()" data-lang="save">Saqlash</button>
+  </div>
+</div>
+
+<!-- ── Portfolio Modal (approved only) ── -->
+<div class="modal-overlay" id="portfolioModal">
+  <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('portfolioModal')">✕</button>
+    <div class="modal-title" data-lang="portfolio">Portfolio</div>
+    <div id="portfolioContent"><div class="loading-center"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<!-- ── Availability Modal (approved only) ── -->
+<div class="modal-overlay" id="availModal">
+  <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('availModal')">✕</button>
+    <div class="modal-title" data-lang="availability">Mavjudlik holati</div>
+    <div id="availContent"><div class="loading-center"><div class="spinner"></div></div></div>
+  </div>
+</div>
+
+<script src="/js/lang.js"></script>
+<script src="/js/utils.js"></script>
+<script src="/js/dashboard-worker.js"></script>
+</body>
+</html>
