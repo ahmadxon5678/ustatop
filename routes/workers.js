@@ -147,22 +147,6 @@ router.put('/my/profile', requireApi, requireWorkerApproved, (req, res) => {
   }
 });
 
-// PUT /api/workers/my/availability — toggle availability
-router.put('/my/availability', requireApi, requireWorkerApproved, (req, res) => {
-  try {
-    if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
-    const { status } = req.body;
-    if (!['available','busy'].includes(status)) return res.status(400).json({ error: 'invalid' });
-    const worker = db.prepare('SELECT id FROM workers WHERE user_id = ?').get(req.session.userId);
-    if (!worker) return res.status(404).json({ error: 'notFound' });
-    db.prepare('UPDATE workers SET availability_status = ? WHERE id = ?').run(status, worker.id);
-    res.json({ success: true, status });
-  } catch (err) {
-    console.error('Availability error:', err);
-    res.status(500).json({ error: 'serverError' });
-  }
-});
-
 // POST /api/workers/my/calendar — set calendar day
 router.post('/my/calendar', requireApi, requireWorkerApproved, (req, res) => {
   try {
@@ -216,6 +200,13 @@ router.post('/me/availability/calendar', requireApi, requireWorkerApproved, (req
       }
     });
     saveAll(dates || []);
+
+    // Derive availability_status from calendar: busy today → busy, otherwise available
+    const today = new Date().toISOString().slice(0, 10);
+    const busyToday = Array.isArray(dates) && dates.some(d => d.date === today && d.status === 'busy');
+    db.prepare('UPDATE workers SET availability_status = ? WHERE id = ?')
+      .run(busyToday ? 'busy' : 'available', worker.id);
+
     res.json({ success: true });
   } catch (err) {
     console.error('Calendar save error:', err);

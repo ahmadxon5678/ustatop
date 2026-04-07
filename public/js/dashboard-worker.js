@@ -445,48 +445,22 @@ function openAvailModal() {
   _calYear = now.getFullYear();
   _calMonth = now.getMonth();
   _calBusy = new Set();
-  var profileP = fetch('/api/workers/my/profile').then(function(r) { return r.json(); });
-  var calP = fetch('/api/workers/me/availability/calendar').then(function(r) { return r.json(); });
-  Promise.all([profileP, calP]).then(function(results) {
-    (results[1].dates || []).forEach(function(d) {
+  fetch('/api/workers/me/availability/calendar').then(function(r) { return r.json(); }).then(function(result) {
+    (result.dates || []).forEach(function(d) {
       if (d.status === 'busy') _calBusy.add(d.date);
     });
-    renderAvailFull(results[0].worker || {});
+    renderAvailModal();
   }).catch(function() {
     document.getElementById('availContent').innerHTML = '<p>' + t('errorGeneric') + '</p>';
   });
 }
 
-function renderAvailFull(worker) {
-  var isAvail = !worker.availability_status || worker.availability_status === 'available';
-  var statusHtml =
-    '<div class="card" style="margin-bottom:16px;text-align:center">' +
-      '<div style="font-size:2.5rem;margin-bottom:8px">' + (isAvail ? '🟢' : '🔴') + '</div>' +
-      '<div style="font-weight:700;font-size:1.05rem;margin-bottom:16px;color:' + (isAvail ? '#27ae60' : '#e74c3c') + '">' +
-        (isAvail ? t('available') : t('busy')) +
-      '</div>' +
-      '<button class="btn btn-full ' + (isAvail ? 'btn-danger' : 'btn-success') + '" onclick="toggleAvailStatus(\'' + (isAvail ? 'busy' : 'available') + '\')">' +
-        (isAvail ? '🔴 ' + t('busy') : '🟢 ' + t('available')) +
-      '</button>' +
-    '</div>';
+function renderAvailModal() {
   document.getElementById('availContent').innerHTML =
-    statusHtml +
-    '<div class="section-title" style="margin-top:16px">' + t('calendar') + '</div>' +
+    '<div class="section-title" style="margin-top:0">' + t('calendar') + '</div>' +
     '<p style="font-size:0.85rem;color:#666;margin-bottom:12px">' + t('calendarDesc') + '</p>' +
     '<div id="availCalSection"></div>';
   renderCalSection();
-}
-
-function toggleAvailStatus(newStatus) {
-  fetch('/api/workers/my/availability', { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ status: newStatus }) })
-    .then(function(r) { return r.json(); }).then(function(d) {
-      if (d.success) {
-        showToast(t('statusUpdated'), 'success');
-        fetch('/api/workers/my/profile').then(function(r) { return r.json(); }).then(function(p) {
-          renderAvailFull(p.worker || {});
-        });
-      }
-    }).catch(function() { showToast(t('errorGeneric'), 'error'); });
 }
 
 function renderCalSection() {
