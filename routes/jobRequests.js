@@ -57,14 +57,19 @@ router.get('/', requireApi, (req, res) => {
 router.post('/', requireApi, (req, res) => {
   try {
     const { title, description, profession_needed, region, city, phone, is_urgent, budget_from, budget_to } = req.body;
-    if (!title || !phone || !region || !city) return res.status(400).json({ error: 'missingFields' });
+    if (!title) return res.status(400).json({ error: 'missingFields' });
+
+    const user = db.prepare('SELECT phone, region, city FROM users WHERE id = ?').get(req.session.userId);
+    const finalPhone = phone || (user && user.phone) || '';
+    const finalRegion = region || (user && user.region) || '';
+    const finalCity = city || (user && user.city) || '';
 
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
     db.prepare(
       `INSERT INTO job_requests (user_id, title, description, profession_needed, region, city, phone, expires_at, is_urgent, budget_from, budget_to)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
     ).run(
-      req.session.userId, title, description || '', profession_needed || '', region || '', city || '', phone, expiresAt,
+      req.session.userId, title, description || '', profession_needed || '', finalRegion, finalCity, finalPhone, expiresAt,
       is_urgent ? 1 : 0,
       budget_from ? parseInt(budget_from) : null,
       budget_to ? parseInt(budget_to) : null

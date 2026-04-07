@@ -38,8 +38,8 @@
       </svg>
     </span>
     <div>
-      <h2 class="greeting-title">Xush kelibsiz, <span class="greeting-name" id="welcomeSub"></span>!</h2>
-      <p class="greeting-sub">Bugun qanday yordam kerak?</p>
+      <h2 class="greeting-title"><span data-lang="greetingTitle">Xush kelibsiz</span>, <span class="greeting-name" id="welcomeSub"></span>!</h2>
+      <p class="greeting-sub" data-lang="greetingSub">Bugun qanday yordam kerak?</p>
     </div>
   </div>
 </div>
@@ -49,17 +49,17 @@
     <div class="stats-bar">
       <div class="stat-item">
         <span class="stat-number" id="stat-requests">0</span>
-        <span class="stat-label">Buyurtmalar</span>
+        <span class="stat-label" data-lang="statOrders">Buyurtmalar</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
         <span class="stat-number" id="stat-bookmarks">0</span>
-        <span class="stat-label">Sevimli ustalar</span>
+        <span class="stat-label" data-lang="statBookmarks">Sevimli ustalar</span>
       </div>
       <div class="stat-divider"></div>
       <div class="stat-item">
         <span class="stat-number" id="stat-notifications">0</span>
-        <span class="stat-label">Xabarlar</span>
+        <span class="stat-label" data-lang="statNotifs">Xabarlar</span>
       </div>
     </div>
     <div class="dashboard-cards-container">
@@ -67,37 +67,37 @@
         <div class="dashboard-card" onclick="window.location.href='/workers'">
           <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#F07020,#FF8C00);box-shadow:0 4px 12px rgba(240,112,32,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></div>
           <div class="dash-card-new-title" data-lang="workerList">Ustalar</div>
-          <p class="card-description">Malakali ustalarni toping va yollang</p>
+          <p class="card-description" data-lang="descFindWorker">Malakali ustalarni toping va yollang</p>
           <span class="dash-card-new-arrow">→</span>
         </div>
         <div class="dashboard-card" onclick="window.location.href='/marketplace'">
           <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#3b82f6,#1d4ed8);box-shadow:0 4px 12px rgba(59,130,246,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
           <div class="dash-card-new-title" data-lang="marketplace">Materiallar bozori</div>
-          <p class="card-description">Qurilish materiallarini ko'ring</p>
+          <p class="card-description" data-lang="descMarketplace">Qurilish materiallarini ko'ring</p>
           <span class="dash-card-new-arrow">→</span>
         </div>
         <div class="dashboard-card" onclick="openJobModal()">
           <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 4px 12px rgba(34,197,94,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="M9 14l2 2 4-4"/></svg></div>
           <div class="dash-card-new-title" data-lang="jobRequest">Buyurtma berish</div>
-          <p class="card-description">Yangi ish e'loni joylashtiring</p>
+          <p class="card-description" data-lang="descJobRequest">Yangi ish e'loni joylashtiring</p>
           <span class="dash-card-new-arrow">→</span>
         </div>
         <div class="dashboard-card" onclick="showSection('myRequests')">
           <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#8b5cf6,#6d28d9);box-shadow:0 4px 12px rgba(139,92,246,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></div>
           <div class="dash-card-new-title" data-lang="myRequests">Mening buyurtmalarim</div>
-          <p class="card-description">Joriy e'lonlaringizni ko'ring</p>
+          <p class="card-description" data-lang="descMyRequests">Joriy e'lonlaringizni ko'ring</p>
           <span class="dash-card-new-arrow">→</span>
         </div>
         <div class="dashboard-card" onclick="showSection('bookmarks')">
           <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#ef4444,#b91c1c);box-shadow:0 4px 12px rgba(239,68,68,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg></div>
           <div class="dash-card-new-title" data-lang="savedWorkers">Sevimli ustalar</div>
-          <p class="card-description">Saqlangan ustalaringiz</p>
+          <p class="card-description" data-lang="descSavedWorkers">Saqlangan ustalaringiz</p>
           <span class="dash-card-new-arrow">→</span>
         </div>
         <div class="dashboard-card" onclick="showSection('profile')">
           <div class="dash-card-icon-wrap" style="background:linear-gradient(135deg,#1a1a2e,#2d3748);box-shadow:0 4px 12px rgba(26,26,46,0.4)"><svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
           <div class="dash-card-new-title" data-lang="myProfile">Mening profilim</div>
-          <p class="card-description">Ma'lumotlaringizni tahrirlang</p>
+          <p class="card-description" data-lang="descMyProfile">Ma'lumotlaringizni tahrirlang</p>
           <span class="dash-card-new-arrow">→</span>
         </div>
       </div>
@@ -133,7 +133,7 @@
         </select>
       </div>
       <div class="form-group">
-        <label class="form-label" data-lang="region">Viloyat</label>
+        <label class="form-label"><span data-lang="regionOptional">Viloyat</span> <span style="color:#9ca3af;font-weight:400" data-lang="optional">(ixtiyoriy)</span></label>
         <select class="form-select" id="jrRegion">
           <option value="" data-lang="selectOption">Tanlang</option>
           <option>Toshkent</option><option>Andijon</option><option>Farg'ona</option>
@@ -145,11 +145,11 @@
       </div>
     </div>
     <div class="form-group">
-      <label class="form-label" data-lang="city">Shahar</label>
+      <label class="form-label"><span data-lang="city">Shahar</span> <span style="color:#9ca3af;font-weight:400" data-lang="optional">(ixtiyoriy)</span></label>
       <input class="form-input" type="text" id="jrCity">
     </div>
     <div class="form-group">
-      <label class="form-label" data-lang="phone">Telefon *</label>
+      <label class="form-label"><span data-lang="phoneOptional">Telefon</span> <span style="color:#9ca3af;font-weight:400" data-lang="optional">(ixtiyoriy)</span></label>
       <input class="form-input" type="tel" id="jrPhone" data-phone placeholder="+998 90 000 00 00">
     </div>
     <div style="margin-bottom:16px">

@@ -360,7 +360,6 @@ function submitJobRequest() {
   var errEl = document.getElementById('jrError');
   errEl.textContent = '';
   if (!title) { errEl.textContent = t('titleRequired'); return; }
-  if (!validatePhone(phone)) { errEl.textContent = t('phoneError'); return; }
   fetch('/api/job-requests', { method: 'POST', headers: {'Content-Type':'application/json'},
     body: JSON.stringify({
       title: title,

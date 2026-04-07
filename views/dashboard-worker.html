@@ -41,8 +41,8 @@
       </svg>
     </span>
     <div>
-      <h2 class="greeting-title">Xush kelibsiz, <span class="greeting-name" id="welcomeSub"></span>!</h2>
-      <p class="greeting-sub">Bugun qanday yordam kerak?</p>
+      <h2 class="greeting-title"><span data-lang="greetingTitle">Xush kelibsiz</span>, <span class="greeting-name" id="welcomeSub"></span>!</h2>
+      <p class="greeting-sub" data-lang="greetingSub">Bugun qanday yordam kerak?</p>
     </div>
   </div>
   <div id="approvedBadge" style="display:none;margin-top:12px;position:relative;z-index:1">
@@ -107,7 +107,7 @@
           <option>Temirchi</option><option>Krovec</option><option>Gipschi</option>
           <option>Dizayner</option><option>Boshqa</option>
         </select></div>
-      <div class="form-group"><label class="form-label" data-lang="region">Viloyat</label>
+      <div class="form-group"><label class="form-label"><span data-lang="regionOptional">Viloyat</span> <span style="color:#9ca3af;font-weight:400" data-lang="optional">(ixtiyoriy)</span></label>
         <select class="form-select" id="jrRegion">
           <option value="" data-lang="selectOption">Tanlang</option>
           <option>Toshkent</option><option>Andijon</option><option>Farg'ona</option>
@@ -117,7 +117,7 @@
           <option>Qoraqalpog'iston</option>
         </select></div>
     </div>
-    <div class="form-group"><label class="form-label" data-lang="phone">Telefon *</label><input class="form-input" type="tel" id="jrPhone" data-phone placeholder="+998 90 000 00 00"></div>
+    <div class="form-group"><label class="form-label"><span data-lang="phoneOptional">Telefon</span> <span style="color:#9ca3af;font-weight:400" data-lang="optional">(ixtiyoriy)</span></label><input class="form-input" type="tel" id="jrPhone" data-phone placeholder="+998 90 000 00 00"></div>
     <div style="margin-bottom:16px">
       <label style="display:flex;align-items:center;gap:10px;cursor:pointer;font-weight:600;color:#1a1a2e">
         <input type="checkbox" id="jrUrgent" style="width:18px;height:18px;accent-color:#e74c3c">
