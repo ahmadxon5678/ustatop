@@ -180,12 +180,20 @@ function renderProfile(worker, portfolio, ratings, calendar) {
       contactItems += '<a href="https://t.me/' + escHtml(tgHandle.replace('@','')) + '" target="_blank" rel="noopener" class="wp-contact-item">' +
         '<span class="wp-contact-icon telegram">' + SVG.telegram + '</span>' +
         '<span>' + escHtml(tgHandle) + '</span></a>';
+    } else {
+      contactItems += '<span class="wp-contact-item" style="cursor:default;opacity:0.5">' +
+        '<span class="wp-contact-icon telegram">' + SVG.telegram + '</span>' +
+        '<span>mavjud emas</span></span>';
     }
     if (worker.instagram) {
       var igHandle = worker.instagram.startsWith('@') ? worker.instagram : '@' + worker.instagram;
       contactItems += '<a href="https://instagram.com/' + escHtml(igHandle.replace('@','')) + '" target="_blank" rel="noopener" class="wp-contact-item">' +
         '<span class="wp-contact-icon instagram">' + SVG.instagram + '</span>' +
         '<span>' + escHtml(igHandle) + '</span></a>';
+    } else {
+      contactItems += '<span class="wp-contact-item" style="cursor:default;opacity:0.5">' +
+        '<span class="wp-contact-icon instagram">' + SVG.instagram + '</span>' +
+        '<span>mavjud emas</span></span>';
     }
     if (contactItems) {
       contactHtml = '<section class="wp-section wp-contact-card"><div class="wp-section-title">Aloqa</div><div class="wp-contact-list">' + contactItems + '</div></section>';

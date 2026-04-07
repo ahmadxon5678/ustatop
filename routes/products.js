@@ -22,14 +22,12 @@ router.get('/', (req, res) => {
     }
     const products = db.prepare(query).all(...params);
     const isLoggedIn = req.session && req.session.userId;
-    const tgPlaceholders = ['@ustatop_market1', '@qurilish_bozor', '@materiallar_uz', '@stroymaterial_uz', '@ustatop_shop'];
-    const igPlaceholders = ['@ustatop.market', '@qurilish.bozor.uz', '@materiallar.uz', '@stroymaterial.uz', '@ustatop.shop'];
     const result = products.map(p => ({
       ...p,
-      seller_phone: isLoggedIn ? p.seller_phone : null,
+      seller_phone: isLoggedIn ? (p.shop_phone || p.seller_phone) : null,
       shop_phone: isLoggedIn ? p.shop_phone : null,
-      shop_telegram: p.shop_telegram || tgPlaceholders[p.id % tgPlaceholders.length],
-      shop_instagram: p.shop_instagram || igPlaceholders[p.id % igPlaceholders.length]
+      shop_telegram: p.shop_telegram || null,
+      shop_instagram: p.shop_instagram || null
     }));
     res.json({ products: result });
   } catch (err) {
@@ -41,21 +39,22 @@ router.get('/', (req, res) => {
 // POST /api/products — approved shops or admin only
 router.post('/', requireApi, (req, res) => {
   try {
-    const { product_name, price, description, product_type, seller_phone } = req.body;
+    const { product_name, price, description, product_type } = req.body;
     if (!product_name || !price) return res.status(400).json({ error: 'missingFields' });
 
     let shopId = null;
     if (req.session.userType === 'shop') {
       if (!req.session.shopApproved) return res.status(403).json({ error: 'notApproved' });
-      const shop = db.prepare('SELECT id FROM shops WHERE user_id = ?').get(req.session.userId);
+      const shop = db.prepare('SELECT id, phone FROM shops WHERE user_id = ?').get(req.session.userId);
       if (!shop) return res.status(403).json({ error: 'notFound' });
       shopId = shop.id;
+      // seller_phone stored for legacy fallback; primary display uses shop JOIN
     }
 
     db.prepare(
       `INSERT INTO products (shop_id, product_name, price, description, product_type, seller_phone)
        VALUES (?, ?, ?, ?, ?, ?)`
-    ).run(shopId, product_name, price, description || '', product_type || '', seller_phone || '');
+    ).run(shopId, product_name, price, description || '', product_type || '', '');
     res.json({ success: true });
   } catch (err) {
     console.error('Add product error:', err);
@@ -80,7 +79,7 @@ router.get('/my', requireApi, (req, res) => {
 // PUT /api/products/:id
 router.put('/:id', requireApi, (req, res) => {
   try {
-    const { product_name, price, description, product_type, seller_phone } = req.body;
+    const { product_name, price, description, product_type } = req.body;
     const product = db.prepare('SELECT * FROM products WHERE id = ?').get(req.params.id);
     if (!product) return res.status(404).json({ error: 'notFound' });
 
@@ -91,8 +90,8 @@ router.put('/:id', requireApi, (req, res) => {
     }
 
     db.prepare(
-      `UPDATE products SET product_name=?, price=?, description=?, product_type=?, seller_phone=? WHERE id=?`
-    ).run(product_name, price, description, product_type, seller_phone, req.params.id);
+      `UPDATE products SET product_name=?, price=?, description=?, product_type=? WHERE id=?`
+    ).run(product_name, price, description, product_type, req.params.id);
     res.json({ success: true });
   } catch (err) {
     console.error('Update product error:', err);

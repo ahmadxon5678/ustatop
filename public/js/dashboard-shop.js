@@ -208,9 +208,6 @@ function openAddProduct() {
   document.getElementById('pType').value = '';
   document.getElementById('pDesc').value = '';
   document.getElementById('productError').textContent = '';
-  // Reset phone
-  var phoneEl = document.getElementById('pPhone');
-  phoneEl.value = '';
   document.getElementById('productModal').classList.add('open');
 }
 
@@ -223,7 +220,6 @@ function editProduct(p) {
   document.getElementById('pType').value = p.product_type || '';
   document.getElementById('pDesc').value = p.description || '';
   document.getElementById('productError').textContent = '';
-  if (p.seller_phone) setPhoneValue(document.getElementById('pPhone'), p.seller_phone);
   document.getElementById('productModal').classList.add('open');
 }
 
@@ -232,13 +228,11 @@ function saveProduct() {
   var price = document.getElementById('pPrice').value.trim();
   var errEl = document.getElementById('productError');
   if (!name || !price) { errEl.textContent = t('nameAndPriceRequired'); return; }
-  var phone = getPhoneRaw(document.getElementById('pPhone'));
   var data = {
     product_name: name,
     price: price,
     product_type: document.getElementById('pType').value,
-    description: document.getElementById('pDesc').value.trim(),
-    seller_phone: phone
+    description: document.getElementById('pDesc').value.trim()
   };
   var url = _editProductId ? '/api/products/' + _editProductId : '/api/products';
   var method = _editProductId ? 'PUT' : 'POST';

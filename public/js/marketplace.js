@@ -249,6 +249,12 @@ function renderProducts(products) {
           '<span class="mkt-contact-icon">' + MSVG.send + '</span>' +
           '<span>' + escHtml(tg) + '</span>' +
         '</a>';
+    } else {
+      contacts +=
+        '<span class="mkt-contact-item" style="cursor:default;opacity:0.45">' +
+          '<span class="mkt-contact-icon">' + MSVG.send + '</span>' +
+          '<span>mavjud emas</span>' +
+        '</span>';
     }
 
     if (p.shop_instagram) {
@@ -258,6 +264,12 @@ function renderProducts(products) {
           '<span class="mkt-contact-icon">' + MSVG.instagram + '</span>' +
           '<span>' + escHtml(ig) + '</span>' +
         '</a>';
+    } else {
+      contacts +=
+        '<span class="mkt-contact-item" style="cursor:default;opacity:0.45">' +
+          '<span class="mkt-contact-icon">' + MSVG.instagram + '</span>' +
+          '<span>mavjud emas</span>' +
+        '</span>';
     }
 
     return (
