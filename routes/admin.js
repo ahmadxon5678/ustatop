@@ -215,6 +215,28 @@ router.put('/shop-submissions/:id/revoke', (req, res) => {
 });
 
 // ── SHOPS ──
+router.get('/shops', (req, res) => {
+  try {
+    const shops = db.prepare(`
+      SELECT s.*, u.phone as user_phone, u.status as user_status
+      FROM shops s LEFT JOIN users u ON u.id = s.user_id
+      ORDER BY s.created_at DESC
+    `).all();
+    res.json({ shops });
+  } catch (err) { res.status(500).json({ error: 'serverError' }); }
+});
+
+router.put('/shops/:id', (req, res) => {
+  try {
+    const { shop_name, owner_name, phone, telegram, instagram, region, city, description, product_types } = req.body;
+    if (!shop_name || !owner_name) return res.status(400).json({ error: 'missingFields' });
+    db.prepare(
+      `UPDATE shops SET shop_name=?, owner_name=?, phone=?, telegram=?, instagram=?, region=?, city=?, description=?, product_types=? WHERE id=?`
+    ).run(shop_name, owner_name, phone || '', telegram || '', instagram || '', region || '', city || '', description || '', product_types || '', req.params.id);
+    res.json({ success: true });
+  } catch (err) { res.status(500).json({ error: 'serverError' }); }
+});
+
 router.delete('/shops/:id', (req, res) => {
   try {
     const shop = db.prepare('SELECT user_id FROM shops WHERE id = ?').get(req.params.id);

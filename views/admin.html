@@ -76,6 +76,9 @@
       <button class="admin-sidebar-btn" onclick="showTab('workers')">
         <span class="admin-nav-icon">⚒️</span>Ustalar
       </button>
+      <button class="admin-sidebar-btn" onclick="showTab('shops')">
+        <span class="admin-nav-icon">🏪</span>Do'konlar
+      </button>
       <button class="admin-sidebar-btn" onclick="showTab('products')">
         <span class="admin-nav-icon">📦</span>Mahsulotlar
       </button>
@@ -138,6 +141,43 @@
     <div style="display:flex;gap:8px">
       <button class="btn btn-secondary" style="flex:1" onclick="closeModal('workerModal')" data-lang="cancel">Bekor</button>
       <button class="btn btn-primary" style="flex:2" onclick="saveWorker()" data-lang="save">Saqlash</button>
+    </div>
+  </div>
+</div>
+
+<!-- Shop Modal -->
+<div class="modal-overlay" id="shopModal">
+  <div class="modal" style="max-width:560px;max-height:90vh;overflow-y:auto">
+    <button class="modal-close" onclick="closeModal('shopModal')">✕</button>
+    <div class="modal-title" id="shopModalTitle">Do'konni tahrirlash</div>
+    <input type="hidden" id="sEditId">
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label">Do'kon nomi *</label><input class="form-input" type="text" id="sShopName"></div>
+      <div class="form-group"><label class="form-label">Egasi *</label><input class="form-input" type="text" id="sOwnerName"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Telefon</label><input class="form-input" type="tel" id="sPhone" data-phone placeholder="+998 90 000 00 00"></div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label">Telegram</label><input class="form-input" type="text" id="sTelegram" placeholder="@username"></div>
+      <div class="form-group"><label class="form-label">Instagram</label><input class="form-input" type="text" id="sInstagram" placeholder="@username"></div>
+    </div>
+    <div class="form-grid-2">
+      <div class="form-group"><label class="form-label">Viloyat</label>
+        <select class="form-select" id="sRegion">
+          <option value="">Tanlang</option>
+          <option>Toshkent</option><option>Andijon</option><option>Farg'ona</option>
+          <option>Namangan</option><option>Samarqand</option><option>Buxoro</option>
+          <option>Xorazm</option><option>Qashqadaryo</option><option>Surxondaryo</option>
+          <option>Jizzax</option><option>Sirdaryo</option><option>Navoiy</option>
+          <option>Qoraqalpog'iston</option>
+        </select></div>
+      <div class="form-group"><label class="form-label">Shahar</label><input class="form-input" type="text" id="sCity"></div>
+    </div>
+    <div class="form-group"><label class="form-label">Mahsulot turlari</label><input class="form-input" type="text" id="sProductTypes" placeholder="Sement, G'isht, Bo'yoq..."></div>
+    <div class="form-group"><label class="form-label">Tavsif</label><textarea class="form-input" id="sDesc" rows="3"></textarea></div>
+    <div class="auth-error" id="sError"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-secondary" style="flex:1" onclick="closeModal('shopModal')">Bekor</button>
+      <button class="btn btn-primary" style="flex:2" onclick="saveShop()">Saqlash</button>
     </div>
   </div>
 </div>

@@ -25,7 +25,7 @@ function showTab(tab) {
   _activeCharts.forEach(function(c) { try { c.destroy(); } catch(e) {} });
   _activeCharts = [];
   document.querySelectorAll('.admin-sidebar-btn').forEach(function(b) { b.classList.remove('active'); });
-  var tabs = { overview:0, users:1, wsubs:2, ssubs:3, workers:4, products:5, jobreqs:6, ratings:7, responses:8 };
+  var tabs = { overview:0, users:1, wsubs:2, ssubs:3, workers:4, shops:5, products:6, jobreqs:7, ratings:8, responses:9 };
   var idx = tabs[tab];
   if (idx !== undefined) document.querySelectorAll('.admin-sidebar-btn')[idx].classList.add('active');
   var content = document.getElementById('adminContent');
@@ -35,6 +35,7 @@ function showTab(tab) {
   else if (tab === 'wsubs') loadWorkerSubs();
   else if (tab === 'ssubs') loadShopSubs();
   else if (tab === 'workers') loadWorkers();
+  else if (tab === 'shops') loadShops();
   else if (tab === 'products') loadProducts();
   else if (tab === 'jobreqs') loadJobReqs();
   else if (tab === 'ratings') loadRatings();
@@ -490,6 +491,105 @@ function saveWorker() {
 function deleteWorker(id) {
   if (!confirm(t('confirmDelete'))) return;
   fetch('/api/admin/workers/' + id, { method: 'DELETE' }).then(function() { showToast("O'chirildi", 'success'); loadWorkers(); loadStats(); });
+}
+
+// ── SHOPS ──
+function loadShops() {
+  fetch('/api/admin/shops').then(function(r) { return r.json(); }).then(function(d) {
+    var shops = d.shops || [];
+    document.getElementById('adminContent').innerHTML =
+      '<div class="admin-toolbar"><h2 class="admin-panel-title">🏪 Do\'konlar</h2>' +
+        '<div style="display:flex;gap:8px">' +
+          '<input class="admin-search" placeholder="Do\'kon nomi yoki egasi..." oninput="filterRows(\'shopsTable\', this.value)">' +
+        '</div>' +
+      '</div>' +
+      '<div class="data-table"><table><thead><tr>' +
+        '<th>ID</th><th>Do\'kon nomi</th><th>Egasi</th><th>Viloyat</th><th>Telefon</th><th>Tasdiqlangan</th><th>Amallar</th>' +
+      '</tr></thead>' +
+      '<tbody id="shopsTable">' +
+      shops.map(function(s) {
+        var approvedBadge = s.approved
+          ? '<span style="color:#27ae60;font-weight:600">✓ Ha</span>'
+          : '<span style="color:#e74c3c;font-weight:600">✗ Yo\'q</span>';
+        return '<tr>' +
+          '<td>' + s.id + '</td>' +
+          '<td>' + escHtml(s.shop_name) + '</td>' +
+          '<td>' + escHtml(s.owner_name) + '</td>' +
+          '<td>' + escHtml(s.region || '') + '</td>' +
+          '<td>' + escHtml(s.phone || '') + '</td>' +
+          '<td>' + approvedBadge + '</td>' +
+          '<td style="display:flex;gap:4px">' +
+            '<button class="btn btn-sm btn-secondary" onclick="editShop(' + s.id + ')">✏️</button>' +
+            '<button class="btn btn-sm btn-danger" onclick="deleteShop(' + s.id + ')">🗑</button>' +
+          '</td></tr>';
+      }).join('') +
+      '</tbody></table></div>';
+  });
+}
+
+function openShopModal() {
+  document.getElementById('shopModalTitle').textContent = "Do'kon qo'shish";
+  document.getElementById('sEditId').value = '';
+  document.getElementById('sShopName').value = '';
+  document.getElementById('sOwnerName').value = '';
+  document.getElementById('sPhone').value = '';
+  document.getElementById('sTelegram').value = '';
+  document.getElementById('sInstagram').value = '';
+  document.getElementById('sRegion').value = '';
+  document.getElementById('sCity').value = '';
+  document.getElementById('sProductTypes').value = '';
+  document.getElementById('sDesc').value = '';
+  document.getElementById('sError').textContent = '';
+  document.getElementById('shopModal').classList.add('open');
+}
+
+function editShop(id) {
+  fetch('/api/admin/shops').then(function(r) { return r.json(); }).then(function(d) {
+    var s = (d.shops || []).find(function(x) { return x.id === id; });
+    if (!s) return;
+    document.getElementById('shopModalTitle').textContent = "Do'konni tahrirlash";
+    document.getElementById('sEditId').value = s.id;
+    document.getElementById('sShopName').value = s.shop_name || '';
+    document.getElementById('sOwnerName').value = s.owner_name || '';
+    document.getElementById('sTelegram').value = s.telegram || '';
+    document.getElementById('sInstagram').value = s.instagram || '';
+    document.getElementById('sRegion').value = s.region || '';
+    document.getElementById('sCity').value = s.city || '';
+    document.getElementById('sProductTypes').value = s.product_types || '';
+    document.getElementById('sDesc').value = s.description || '';
+    if (s.phone) setPhoneValue(document.getElementById('sPhone'), s.phone);
+    document.getElementById('sError').textContent = '';
+    document.getElementById('shopModal').classList.add('open');
+  });
+}
+
+function saveShop() {
+  var editId = document.getElementById('sEditId').value;
+  var shopName = document.getElementById('sShopName').value.trim();
+  var ownerName = document.getElementById('sOwnerName').value.trim();
+  if (!shopName || !ownerName) { document.getElementById('sError').textContent = t('requiredFields'); return; }
+  var data = {
+    shop_name:     shopName,
+    owner_name:    ownerName,
+    phone:         getPhoneRaw(document.getElementById('sPhone')),
+    telegram:      document.getElementById('sTelegram').value.trim(),
+    instagram:     document.getElementById('sInstagram').value.trim(),
+    region:        document.getElementById('sRegion').value,
+    city:          document.getElementById('sCity').value.trim(),
+    product_types: document.getElementById('sProductTypes').value.trim(),
+    description:   document.getElementById('sDesc').value.trim()
+  };
+  if (!editId) { document.getElementById('sError').textContent = t('errorGeneric'); return; }
+  fetch('/api/admin/shops/' + editId, { method: 'PUT', headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
+    .then(function(r) { return r.json(); }).then(function(d) {
+      if (d.success) { closeModal('shopModal'); showToast(t('savedSuccess'), 'success'); loadShops(); }
+      else document.getElementById('sError').textContent = t('errorGeneric');
+    }).catch(function() { document.getElementById('sError').textContent = t('errorGeneric'); });
+}
+
+function deleteShop(id) {
+  if (!confirm(t('confirmDelete'))) return;
+  fetch('/api/admin/shops/' + id, { method: 'DELETE' }).then(function() { showToast("O'chirildi", 'success'); loadShops(); loadStats(); });
 }
 
 // ── PRODUCTS ──
