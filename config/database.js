@@ -123,6 +123,17 @@ db.exec(`
     UNIQUE(worker_id, customer_id)
   );
 
+  CREATE TABLE IF NOT EXISTS product_reviews (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    product_id INTEGER REFERENCES products(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    stars INTEGER NOT NULL CHECK(stars BETWEEN 1 AND 5),
+    review TEXT NOT NULL,
+    photo TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(product_id, user_id)
+  );
+
   CREATE TABLE IF NOT EXISTS bookmarks (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
@@ -283,6 +294,17 @@ try {
   }
 } catch (e) {
   console.error('workers is_ustoz migration error:', e.message);
+}
+
+// ── Migration: add rating (REAL) to products ──
+try {
+  const productCols = db.prepare('PRAGMA table_info(products)').all();
+  if (!productCols.find(c => c.name === 'rating')) {
+    db.exec('ALTER TABLE products ADD COLUMN rating REAL DEFAULT 0');
+    console.log('products: added rating column');
+  }
+} catch (e) {
+  console.error('products rating migration error:', e.message);
 }
 
 // ── Migration: add price fields to job_responses ──
