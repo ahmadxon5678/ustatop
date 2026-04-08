@@ -7,7 +7,7 @@ const { requireApi } = require('../middleware/auth');
 router.get('/profile', requireApi, (req, res) => {
   try {
     const user = db.prepare(
-      'SELECT id, name, phone, region, city, additional_info, user_type, language, created_at FROM users WHERE id = ?'
+      'SELECT id, name, phone, region, city, additional_info, user_type, language, instagram_username, telegram_username, created_at FROM users WHERE id = ?'
     ).get(req.session.userId);
     if (!user) return res.status(404).json({ error: 'notFound' });
     res.json({ user });
@@ -19,10 +19,10 @@ router.get('/profile', requireApi, (req, res) => {
 // PUT /api/users/profile
 router.put('/profile', requireApi, (req, res) => {
   try {
-    const { name, region, city, additional_info } = req.body;
+    const { name, region, city, additional_info, instagram_username, telegram_username } = req.body;
     if (!name || !region || !city) return res.status(400).json({ error: 'missingFields' });
-    db.prepare('UPDATE users SET name=?, region=?, city=?, additional_info=? WHERE id=?')
-      .run(name, region, city, additional_info || '', req.session.userId);
+    db.prepare('UPDATE users SET name=?, region=?, city=?, additional_info=?, instagram_username=?, telegram_username=? WHERE id=?')
+      .run(name, region, city, additional_info || '', instagram_username || null, telegram_username || null, req.session.userId);
     req.session.userName = name;
     res.json({ success: true });
   } catch (err) {

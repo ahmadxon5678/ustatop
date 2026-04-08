@@ -248,6 +248,12 @@ function loadProfile() {
         '</div>' +
         '<div class="form-group"><label class="form-label" data-lang="additionalInfo">Qo\'shimcha</label>' +
           '<input class="form-input" type="text" id="pInfo" value="' + escHtml(u.additional_info||'') + '"></div>' +
+        '<div class="form-grid-2">' +
+          '<div class="form-group"><label class="form-label">Instagram (ixtiyoriy)</label>' +
+            '<input class="form-input" type="text" id="pInstagram" value="' + escHtml(u.instagram_username||'') + '" placeholder="@username"></div>' +
+          '<div class="form-group"><label class="form-label">Telegram (ixtiyoriy)</label>' +
+            '<input class="form-input" type="text" id="pTelegram" value="' + escHtml(u.telegram_username||'') + '" placeholder="@username"></div>' +
+        '</div>' +
         '<div class="auth-error" id="profileError"></div>' +
         '<button class="btn btn-primary" onclick="saveProfile()">' + t('save') + '</button>' +
       '</div>';
@@ -260,8 +266,11 @@ function saveProfile() {
   var city = document.getElementById('pCity').value.trim();
   var info = document.getElementById('pInfo').value.trim();
   if (!name || !region || !city) { document.getElementById('profileError').textContent = t('requiredFields'); return; }
+  var instagram = document.getElementById('pInstagram') ? document.getElementById('pInstagram').value.trim() : null;
+  var telegram = document.getElementById('pTelegram') ? document.getElementById('pTelegram').value.trim() : null;
   fetch('/api/users/profile', { method: 'PUT', headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({ name: name, region: region, city: city, additional_info: info })
+    body: JSON.stringify({ name: name, region: region, city: city, additional_info: info,
+      instagram_username: instagram || null, telegram_username: telegram || null })
   }).then(function(r) { return r.json(); }).then(function(d) {
     if (d.success) showToast(t('profileUpdated'), 'success');
     else document.getElementById('profileError').textContent = t('errorGeneric');

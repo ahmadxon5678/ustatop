@@ -17,7 +17,8 @@ router.post('/register', (req, res) => {
   try {
     const { name, phone, region, city, additional_info, user_type,
             profession, experience, description, telegram, instagram,
-            shop_name, owner_name, product_types } = req.body;
+            shop_name, owner_name, product_types,
+            instagram_username, telegram_username } = req.body;
 
     if (!name || !phone || !region || !city || !user_type) {
       return res.status(400).json({ error: 'missingFields' });
@@ -30,10 +31,13 @@ router.post('/register', (req, res) => {
     if (existing) return res.status(400).json({ error: 'phoneTaken' });
 
     const insert = db.prepare(
-      `INSERT INTO users (name, phone, password, region, city, additional_info, user_type)
-       VALUES (?, ?, '', ?, ?, ?, ?)`
+      `INSERT INTO users (name, phone, password, region, city, additional_info, user_type, instagram_username, telegram_username)
+       VALUES (?, ?, '', ?, ?, ?, ?, ?, ?)`
     );
-    const result = insert.run(name, phone, region, city, additional_info || '', user_type);
+    const result = insert.run(
+      name, phone, region, city, additional_info || '', user_type,
+      instagram_username || null, telegram_username || null
+    );
     const userId = result.lastInsertRowid;
 
     let worker = null, shop = null;

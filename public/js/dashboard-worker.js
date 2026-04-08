@@ -612,6 +612,18 @@ function loadJobRequests() {
             '<span>📅 ' + formatDate(jr.created_at) + '</span>' +
           '</div>' +
           (jr.description ? '<div class="job-desc">' + escHtml(jr.description) + '</div>' : '') +
+          '<div style="display:flex;gap:16px;margin:10px 0;font-size:0.85rem;flex-wrap:wrap">' +
+            '<span style="display:flex;align-items:center;gap:5px"><span style="color:#9ca3af">Telegram:</span>' +
+              (jr.poster_telegram
+                ? '<a href="https://t.me/' + escHtml(jr.poster_telegram.replace('@','')) + '" target="_blank" rel="noopener" style="color:#F07020;text-decoration:none;font-weight:600">@' + escHtml(jr.poster_telegram.replace('@','')) + '</a>'
+                : '<span style="color:#9ca3af;font-style:italic">mavjud emas</span>') +
+            '</span>' +
+            '<span style="display:flex;align-items:center;gap:5px"><span style="color:#9ca3af">Instagram:</span>' +
+              (jr.poster_instagram
+                ? '<a href="https://instagram.com/' + escHtml(jr.poster_instagram.replace('@','')) + '" target="_blank" rel="noopener" style="color:#F07020;text-decoration:none;font-weight:600">@' + escHtml(jr.poster_instagram.replace('@','')) + '</a>'
+                : '<span style="color:#9ca3af;font-style:italic">mavjud emas</span>') +
+            '</span>' +
+          '</div>' +
           '<div class="job-actions">' +
             '<button class="btn btn-primary btn-sm" onclick="openRespondModal(' + jr.id + ',\'' + escHtml(jr.title) + '\')">' + t('respond') + '</button>' +
           '</div>' +

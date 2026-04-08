@@ -285,6 +285,21 @@ try {
   console.error('workers verified migration error:', e.message);
 }
 
+// ── Migration: add instagram_username + telegram_username to users ──
+try {
+  const uCols = db.prepare('PRAGMA table_info(users)').all();
+  if (!uCols.find(c => c.name === 'instagram_username')) {
+    db.exec("ALTER TABLE users ADD COLUMN instagram_username TEXT DEFAULT NULL");
+    console.log('users: added instagram_username column');
+  }
+  if (!uCols.find(c => c.name === 'telegram_username')) {
+    db.exec("ALTER TABLE users ADD COLUMN telegram_username TEXT DEFAULT NULL");
+    console.log('users: added telegram_username column');
+  }
+} catch (e) {
+  console.error('users social columns migration error:', e.message);
+}
+
 // ── Migration: add is_ustoz to workers ──
 try {
   const wColsUstoz = db.prepare('PRAGMA table_info(workers)').all();

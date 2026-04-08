@@ -66,8 +66,10 @@ function updateRegBadge() {
   var btn = document.getElementById('regBtn');
   var wf = document.getElementById('workerFields');
   var sf = document.getElementById('shopFields');
+  var csf = document.getElementById('customerSocialFields');
   wf.style.display = _userType === 'worker' ? '' : 'none';
   sf.style.display = _userType === 'shop' ? '' : 'none';
+  if (csf) csf.style.display = _userType === 'customer' ? '' : 'none';
   if (_userType === 'worker') {
     badge.textContent = '🔨 ' + t('workerRegTitle');
     badge.className = 'type-badge type-badge-worker';
@@ -152,6 +154,11 @@ function submitRegister() {
   if (!validatePhone(phone)) { errEl.textContent = t('phoneError'); return; }
 
   var body = { name: name, phone: phone, region: region, city: city, additional_info: info, user_type: _userType };
+
+  if (_userType === 'customer') {
+    body.instagram_username = document.getElementById('regCustomerInstagram').value.trim() || null;
+    body.telegram_username = document.getElementById('regCustomerTelegram').value.trim() || null;
+  }
 
   if (_userType === 'worker') {
     var prof = document.getElementById('regProfession').value;

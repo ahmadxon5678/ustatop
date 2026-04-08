@@ -19,6 +19,7 @@ router.get('/', requireApi, (req, res) => {
     } else {
       // Workers see all active requests with response count, urgent first
       query = `SELECT jr.*, u.name as poster_name,
+        u.instagram_username as poster_instagram, u.telegram_username as poster_telegram,
         (SELECT COUNT(*) FROM job_responses jresp WHERE jresp.job_request_id = jr.id) as response_count
         FROM job_requests jr JOIN users u ON u.id = jr.user_id
         WHERE jr.status = 'active'`;
