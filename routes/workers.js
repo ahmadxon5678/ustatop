@@ -62,7 +62,7 @@ router.get('/', async (req, res) => {
     res.json({ workers: result });
   } catch (err) {
     console.error('Workers list error:', err);
-    res.status(500).json({ error: 'serverError' });
+    res.status(500).json({ error: 'serverError', detail: err.message });
   }
 });
 

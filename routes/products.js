@@ -71,7 +71,7 @@ router.get('/', async (req, res) => {
     res.json({ products: result });
   } catch (err) {
     console.error('Products error:', err);
-    res.status(500).json({ error: 'serverError' });
+    res.status(500).json({ error: 'serverError', detail: err.message });
   }
 });
 
