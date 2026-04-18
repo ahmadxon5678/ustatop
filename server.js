@@ -4,6 +4,11 @@ const session = require('express-session');
 const path = require('path');
 const prisma = require('./config/database');
 
+// Debug: log env state at startup
+console.log('DATABASE_URL set:', !!process.env.DATABASE_URL);
+console.log('SESSION_SECRET set:', !!process.env.SESSION_SECRET);
+console.log('NODE_ENV:', process.env.NODE_ENV);
+
 const app = express();
 
 // ── Session store (PostgreSQL) ──
@@ -58,6 +63,13 @@ app.use('/api/admin', adminRoutes);
 // ── Page routes ──
 const { requireLogin, requireCustomer, requireWorker, requireShop } = require('./middleware/auth');
 const { requireAdmin } = require('./middleware/adminAuth');
+
+app.get('/debug-env', (req, res) => res.json({
+  DATABASE_URL: process.env.DATABASE_URL ? 'SET (length:' + process.env.DATABASE_URL.length + ')' : 'NOT SET',
+  SESSION_SECRET: !!process.env.SESSION_SECRET,
+  PORT: process.env.PORT,
+  NODE_ENV: process.env.NODE_ENV
+}));
 
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'views', 'intro.html')));
 
