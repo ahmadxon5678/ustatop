@@ -1,7 +1,11 @@
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcrypt');
 const prisma = require('../config/database');
 const { getCorrectDashboard } = require('../middleware/auth');
+
+const SALT_ROUNDS = 10;
+const PASSWORD_REGEX = /^[a-zA-Z0-9]{6,}$/;
 
 function setSession(req, user, worker, shop) {
   req.session.userId = user.id;
@@ -18,7 +22,8 @@ router.post('/register', async (req, res) => {
     const { name, phone, region, city, additional_info, user_type,
             profession, experience, description, telegram, instagram,
             shop_name, owner_name, product_types,
-            instagram_username, telegram_username } = req.body;
+            instagram_username, telegram_username,
+            password } = req.body;
 
     if (!name || !phone || !region || !city || !user_type) {
       return res.status(400).json({ error: 'missingFields' });
@@ -26,13 +31,18 @@ router.post('/register', async (req, res) => {
     if (!/^\+998\d{9}$/.test(phone)) {
       return res.status(400).json({ error: 'phoneError' });
     }
+    if (!password || !PASSWORD_REGEX.test(password)) {
+      return res.status(400).json({ error: 'passwordInvalid' });
+    }
 
     const existing = await prisma.user.findFirst({ where: { phone } });
     if (existing) return res.status(400).json({ error: 'phoneTaken' });
 
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+
     const user = await prisma.user.create({
       data: {
-        name, phone, password: '', region, city,
+        name, phone, password: hashedPassword, region, city,
         additional_info: additional_info || '',
         user_type,
         instagram_username: instagram_username || null,
@@ -103,12 +113,19 @@ router.post('/register', async (req, res) => {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
-    const { phone } = req.body;
+    const { phone, password } = req.body;
     if (!phone) return res.status(400).json({ error: 'phoneError' });
+    if (!password) return res.status(400).json({ error: 'passwordRequired' });
 
     const user = await prisma.user.findFirst({ where: { phone } });
     if (!user) return res.status(404).json({ error: 'phoneNotFound' });
     if (user.status === 'banned') return res.status(403).json({ error: 'banned' });
+
+    // Users registered before the password system have empty password — let them in without check
+    if (user.password && user.password !== '') {
+      const match = await bcrypt.compare(password, user.password);
+      if (!match) return res.status(401).json({ error: 'wrongPassword' });
+    }
 
     const worker = user.user_type === 'worker'
       ? await prisma.worker.findFirst({ where: { user_id: user.id } }) : null;

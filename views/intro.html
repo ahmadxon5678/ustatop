@@ -297,6 +297,10 @@
         <label class="form-label" data-lang="phone">Telefon</label>
         <input class="form-input" type="tel" id="loginPhone" data-phone placeholder="+998 90 000 00 00" autocomplete="tel">
       </div>
+      <div class="form-group">
+        <label class="form-label" data-lang="password">Parol</label>
+        <input class="form-input" type="password" id="loginPassword" placeholder="••••••" autocomplete="current-password">
+      </div>
       <div class="auth-error" id="loginError"></div>
       <button class="btn btn-primary btn-full" onclick="submitLogin()" id="loginBtn" data-lang="login">Kirish</button>
       <div class="auth-switch"><span data-lang="noAccount">Akkaunt yo'qmi?</span> <a href="#" onclick="switchTab('register');return false;" data-lang="register">Ro'yxatdan o'ting</a></div>
@@ -333,6 +337,16 @@
       <div class="form-group">
         <label class="form-label" data-lang="additionalInfo">Qo'shimcha ma'lumot</label>
         <input class="form-input" type="text" id="regInfo" placeholder="(ixtiyoriy)">
+      </div>
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label class="form-label" data-lang="password">Parol *</label>
+          <input class="form-input" type="password" id="regPassword" placeholder="••••••" autocomplete="new-password">
+        </div>
+        <div class="form-group">
+          <label class="form-label" data-lang="confirmPassword">Parolni tasdiqlash *</label>
+          <input class="form-input" type="password" id="regPasswordConfirm" placeholder="••••••" autocomplete="new-password">
+        </div>
       </div>
       <div id="customerSocialFields">
         <div class="form-grid-2">

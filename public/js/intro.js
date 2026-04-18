@@ -116,16 +116,18 @@ function proceedToDashboard() {
 function submitLogin() {
   var phoneEl = document.getElementById('loginPhone');
   var phone = getPhoneRaw(phoneEl);
+  var password = document.getElementById('loginPassword').value;
   var errEl = document.getElementById('loginError');
   errEl.textContent = '';
   if (!phone || phone === '+998') { errEl.textContent = t('phoneError'); return; }
   if (!validatePhone(phone)) { errEl.textContent = t('phoneError'); return; }
+  if (!password) { errEl.textContent = t('passwordRequired'); return; }
   var btn = document.getElementById('loginBtn');
   showLoading(btn);
   fetch('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone: phone })
+    body: JSON.stringify({ phone: phone, password: password })
   }).then(function(r) { return r.json(); }).then(function(d) {
     hideLoading(btn, t('login'));
     if (d.success) {
@@ -148,12 +150,16 @@ function submitRegister() {
   var region = document.getElementById('regRegion').value;
   var city = document.getElementById('regCity').value.trim();
   var info = document.getElementById('regInfo').value.trim();
+  var password = document.getElementById('regPassword').value;
+  var passwordConfirm = document.getElementById('regPasswordConfirm').value;
 
   if (!name || !region || !city) { errEl.textContent = t('requiredFields'); return; }
   if (!phone || phone === '+998') { errEl.textContent = t('phoneError'); return; }
   if (!validatePhone(phone)) { errEl.textContent = t('phoneError'); return; }
+  if (!password || !/^[a-zA-Z0-9]{6,}$/.test(password)) { errEl.textContent = t('passwordInvalid'); return; }
+  if (password !== passwordConfirm) { errEl.textContent = t('passwordMismatch'); return; }
 
-  var body = { name: name, phone: phone, region: region, city: city, additional_info: info, user_type: _userType };
+  var body = { name: name, phone: phone, region: region, city: city, additional_info: info, user_type: _userType, password: password };
 
   if (_userType === 'customer') {
     body.instagram_username = document.getElementById('regCustomerInstagram').value.trim() || null;

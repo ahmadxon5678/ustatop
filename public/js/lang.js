@@ -190,7 +190,12 @@ const LANG = {
     descAvailability: 'Ish jadvalingizni belgilang',
     descMyReviews: 'Mijozlar sharhlarini ko\'ring',
     phoneOptional: 'Telefon',
-    regionOptional: 'Viloyat'
+    regionOptional: 'Viloyat',
+    confirmPassword: 'Parolni tasdiqlash',
+    passwordRequired: 'Parolni kiriting.',
+    passwordInvalid: "Parol kamida 6 ta belgi bo'lishi va faqat harf yoki raqamlardan iborat bo'lishi kerak.",
+    passwordMismatch: 'Parollar mos kelmadi.',
+    wrongPassword: "Parol noto'g'ri."
   },
   ru: {
     appName: 'UstaTOP',
@@ -383,7 +388,12 @@ const LANG = {
     descAvailability: 'Установите рабочий график',
     descMyReviews: 'Просмотр отзывов клиентов',
     phoneOptional: 'Телефон',
-    regionOptional: 'Регион'
+    regionOptional: 'Регион',
+    confirmPassword: 'Подтвердите пароль',
+    passwordRequired: 'Введите пароль.',
+    passwordInvalid: 'Пароль должен быть не менее 6 символов и содержать только буквы или цифры.',
+    passwordMismatch: 'Пароли не совпадают.',
+    wrongPassword: 'Неверный пароль.'
   }
 };
 
