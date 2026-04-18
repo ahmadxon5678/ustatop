@@ -1,19 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const prisma = require('../config/database');
 const { getCorrectDashboard } = require('../middleware/auth');
 
 function setSession(req, user, worker, shop) {
   req.session.userId = user.id;
   req.session.userType = user.user_type;
   req.session.userName = user.name;
-  req.session.workerApproved = worker ? (worker.approved === 1) : false;
-  req.session.shopApproved = shop ? (shop.approved === 1) : false;
+  req.session.workerApproved = worker ? worker.approved : false;
+  req.session.shopApproved = shop ? shop.approved : false;
   req.session.isAdmin = false;
 }
 
 // POST /api/auth/register
-router.post('/register', (req, res) => {
+router.post('/register', async (req, res) => {
   try {
     const { name, phone, region, city, additional_info, user_type,
             profession, experience, description, telegram, instagram,
@@ -27,18 +27,19 @@ router.post('/register', (req, res) => {
       return res.status(400).json({ error: 'phoneError' });
     }
 
-    const existing = db.prepare('SELECT id FROM users WHERE phone = ?').get(phone);
+    const existing = await prisma.user.findFirst({ where: { phone } });
     if (existing) return res.status(400).json({ error: 'phoneTaken' });
 
-    const insert = db.prepare(
-      `INSERT INTO users (name, phone, password, region, city, additional_info, user_type, instagram_username, telegram_username)
-       VALUES (?, ?, '', ?, ?, ?, ?, ?, ?)`
-    );
-    const result = insert.run(
-      name, phone, region, city, additional_info || '', user_type,
-      instagram_username || null, telegram_username || null
-    );
-    const userId = result.lastInsertRowid;
+    const user = await prisma.user.create({
+      data: {
+        name, phone, password: '', region, city,
+        additional_info: additional_info || '',
+        user_type,
+        instagram_username: instagram_username || null,
+        telegram_username: telegram_username || null
+      }
+    });
+    const userId = user.id;
 
     let worker = null, shop = null;
 
@@ -46,15 +47,20 @@ router.post('/register', (req, res) => {
       if (!profession || !experience || !description) {
         return res.status(400).json({ error: 'missingFields' });
       }
-      db.prepare(
-        `INSERT INTO workers (user_id, name, profession, experience, description, region, city, phone, telegram, instagram, approved)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)`
-      ).run(userId, name, profession, experience, description, region, city, phone, telegram || '', instagram || '');
-      db.prepare(
-        `INSERT INTO worker_submissions (user_id, name, profession, region, city, experience, description, phone, telegram, instagram)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).run(userId, name, profession, region, city, experience, description, phone, telegram || '', instagram || '');
-      worker = db.prepare('SELECT * FROM workers WHERE user_id = ?').get(userId);
+      worker = await prisma.worker.create({
+        data: {
+          user_id: userId, name, profession, experience, description,
+          region, city, phone, telegram: telegram || '', instagram: instagram || '',
+          approved: false
+        }
+      });
+      await prisma.workerSubmission.create({
+        data: {
+          user_id: userId, name, profession, region, city,
+          experience, description, phone,
+          telegram: telegram || '', instagram: instagram || ''
+        }
+      });
     }
 
     if (user_type === 'shop') {
@@ -62,18 +68,24 @@ router.post('/register', (req, res) => {
         return res.status(400).json({ error: 'missingFields' });
       }
       const ptStr = Array.isArray(product_types) ? product_types.join(',') : (product_types || '');
-      db.prepare(
-        `INSERT INTO shops (user_id, shop_name, owner_name, phone, telegram, instagram, region, city, description, product_types)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).run(userId, shop_name, owner_name, phone, telegram || '', instagram || '', region, city, description || '', ptStr);
-      db.prepare(
-        `INSERT INTO shop_submissions (user_id, shop_name, owner_name, phone, telegram, instagram, region, city, description, product_types)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      ).run(userId, shop_name, owner_name, phone, telegram || '', instagram || '', region, city, description || '', ptStr);
-      shop = db.prepare('SELECT * FROM shops WHERE user_id = ?').get(userId);
+      shop = await prisma.shop.create({
+        data: {
+          user_id: userId, shop_name, owner_name, phone,
+          telegram: telegram || '', instagram: instagram || '',
+          region, city, description: description || '',
+          product_types: ptStr, approved: false
+        }
+      });
+      await prisma.shopSubmission.create({
+        data: {
+          user_id: userId, shop_name, owner_name, phone,
+          telegram: telegram || '', instagram: instagram || '',
+          region, city, description: description || '',
+          product_types: ptStr
+        }
+      });
     }
 
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
     setSession(req, user, worker, shop);
 
     res.json({
@@ -89,25 +101,27 @@ router.post('/register', (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res) => {
   try {
     const { phone } = req.body;
     if (!phone) return res.status(400).json({ error: 'phoneError' });
 
-    const user = db.prepare('SELECT * FROM users WHERE phone = ?').get(phone);
+    const user = await prisma.user.findFirst({ where: { phone } });
     if (!user) return res.status(404).json({ error: 'phoneNotFound' });
     if (user.status === 'banned') return res.status(403).json({ error: 'banned' });
 
     const worker = user.user_type === 'worker'
-      ? db.prepare('SELECT * FROM workers WHERE user_id = ?').get(user.id) : null;
+      ? await prisma.worker.findFirst({ where: { user_id: user.id } }) : null;
     const shop = user.user_type === 'shop'
-      ? db.prepare('SELECT * FROM shops WHERE user_id = ?').get(user.id) : null;
+      ? await prisma.shop.findFirst({ where: { user_id: user.id } }) : null;
 
     setSession(req, user, worker, shop);
 
-    // Update last_seen for workers
     if (user.user_type === 'worker' && worker) {
-      try { db.prepare('UPDATE workers SET last_seen = CURRENT_TIMESTAMP WHERE user_id = ?').run(user.id); } catch(_) {}
+      await prisma.worker.update({
+        where: { id: worker.id },
+        data: { last_seen: new Date() }
+      });
     }
 
     res.json({
@@ -127,7 +141,7 @@ router.post('/admin', (req, res) => {
   try {
     const { password } = req.body;
     if (!password) return res.status(400).json({ error: 'missingFields' });
-    if (password !== (process.env.ADMIN_PASSWORD || 'AhmadJohns!09')) {
+    if (!process.env.ADMIN_PASSWORD || password !== process.env.ADMIN_PASSWORD) {
       return res.status(401).json({ error: 'wrongPassword' });
     }
     req.session.isAdmin = true;
@@ -146,32 +160,44 @@ router.post('/logout', (req, res) => {
 });
 
 // GET /api/auth/status
-router.get('/status', (req, res) => {
+router.get('/status', async (req, res) => {
   if (!req.session || !req.session.userId) {
     return res.json({ loggedIn: false });
   }
-  // Refresh approval status from DB
   try {
-    const user = db.prepare('SELECT * FROM users WHERE id = ?').get(req.session.userId);
+    const user = await prisma.user.findFirst({ where: { id: req.session.userId } });
     if (!user) { req.session.destroy(() => {}); return res.json({ loggedIn: false }); }
+
     const worker = user.user_type === 'worker'
-      ? db.prepare('SELECT * FROM workers WHERE user_id = ?').get(user.id) : null;
+      ? await prisma.worker.findFirst({ where: { user_id: user.id } }) : null;
     const shop = user.user_type === 'shop'
-      ? db.prepare('SELECT * FROM shops WHERE user_id = ?').get(user.id) : null;
+      ? await prisma.shop.findFirst({ where: { user_id: user.id } }) : null;
+
     const workerSub = user.user_type === 'worker'
-      ? db.prepare("SELECT status FROM worker_submissions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1").get(user.id) : null;
+      ? await prisma.workerSubmission.findFirst({
+          where: { user_id: user.id },
+          orderBy: { created_at: 'desc' },
+          select: { status: true }
+        }) : null;
     const shopSub = user.user_type === 'shop'
-      ? db.prepare("SELECT status FROM shop_submissions WHERE user_id = ? ORDER BY created_at DESC LIMIT 1").get(user.id) : null;
+      ? await prisma.shopSubmission.findFirst({
+          where: { user_id: user.id },
+          orderBy: { created_at: 'desc' },
+          select: { status: true }
+        }) : null;
+
     const workerRejected = !!(workerSub && workerSub.status === 'rejected');
     const shopRejected = !!(shopSub && shopSub.status === 'rejected');
     const wasWorkerApproved = req.session.workerApproved;
     const wasShopApproved = req.session.shopApproved;
-    req.session.workerApproved = workerRejected ? false : (worker ? (worker.approved === 1) : false);
-    req.session.shopApproved = shopRejected ? false : (shop ? (shop.approved === 1) : false);
+    req.session.workerApproved = workerRejected ? false : (worker ? worker.approved : false);
+    req.session.shopApproved = shopRejected ? false : (shop ? shop.approved : false);
 
-    // Update last_seen for workers on each status check (dashboard visit)
     if (user.user_type === 'worker') {
-      try { db.prepare('UPDATE workers SET last_seen = CURRENT_TIMESTAMP WHERE user_id = ?').run(user.id); } catch(_) {}
+      await prisma.worker.updateMany({
+        where: { user_id: user.id },
+        data: { last_seen: new Date() }
+      });
     }
 
     res.json({
@@ -193,12 +219,16 @@ router.get('/status', (req, res) => {
 });
 
 // GET /api/auth/me
-router.get('/me', (req, res) => {
+router.get('/me', async (req, res) => {
   if (!req.session || !req.session.userId) {
     return res.status(401).json({ error: 'notLoggedIn' });
   }
   try {
-    const user = db.prepare('SELECT id, name, phone, region, city, additional_info, user_type, language, created_at FROM users WHERE id = ?').get(req.session.userId);
+    const user = await prisma.user.findFirst({
+      where: { id: req.session.userId },
+      select: { id: true, name: true, phone: true, region: true, city: true,
+                additional_info: true, user_type: true, language: true, created_at: true }
+    });
     if (!user) return res.status(401).json({ error: 'notLoggedIn' });
     res.json({ user });
   } catch (err) {

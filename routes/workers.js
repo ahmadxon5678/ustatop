@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const prisma = require('../config/database');
+const { Prisma } = require('@prisma/client');
 const { requireApi, requireWorkerApproved } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
@@ -27,31 +28,37 @@ const imageFilter = (req, file, cb) => {
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: imageFilter });
 
 // GET /api/workers — list all approved workers
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const { region, profession, search, verified } = req.query;
-    let query = `SELECT w.*,
-      (SELECT COUNT(*) FROM worker_views wv
-       WHERE wv.worker_id = w.id
-       AND wv.viewed_at > datetime('now', '-7 days')) as weekly_views,
-      (SELECT COUNT(*) FROM ratings r WHERE r.worker_id = w.id) as review_count,
-      (SELECT COUNT(*) FROM job_responses jr WHERE jr.worker_id = w.id) as total_responses,
-      (SELECT AVG(CAST((julianday(jr.created_at) - julianday(jreq.created_at)) * 24 AS REAL))
-       FROM job_responses jr JOIN job_requests jreq ON jreq.id = jr.job_request_id
-       WHERE jr.worker_id = w.id) as avg_response_hours
-      FROM workers w WHERE w.approved = 1`;
-    const params = [];
-    if (region) { query += ' AND w.region = ?'; params.push(region); }
-    if (profession) { query += ' AND w.profession = ?'; params.push(profession); }
-    if (verified === '1') { query += ' AND w.is_verified = 1'; }
-    query += ' ORDER BY w.is_featured DESC, w.featured_order ASC, w.rating DESC, w.created_at DESC';
-    const workers = db.prepare(query).all(...params);
+    const { region, profession, verified } = req.query;
 
-    // Get portfolio thumbnails
-    const result = workers.map(w => {
-      const thumb = db.prepare('SELECT image_url FROM worker_portfolio WHERE worker_id = ? LIMIT 1').get(w.id);
+    let whereClause = Prisma.sql`w.approved = true`;
+    if (region) whereClause = Prisma.sql`${whereClause} AND w.region = ${region}`;
+    if (profession) whereClause = Prisma.sql`${whereClause} AND w.profession = ${profession}`;
+    if (verified === '1') whereClause = Prisma.sql`${whereClause} AND w.is_verified = true`;
+
+    const workers = await prisma.$queryRaw`
+      SELECT w.*,
+        (SELECT COUNT(*)::int FROM worker_views wv
+         WHERE wv.worker_id = w.id
+         AND wv.viewed_at > NOW() - INTERVAL '7 days') as weekly_views,
+        (SELECT COUNT(*)::int FROM ratings r WHERE r.worker_id = w.id) as review_count,
+        (SELECT COUNT(*)::int FROM job_responses jr WHERE jr.worker_id = w.id) as total_responses,
+        (SELECT AVG(EXTRACT(EPOCH FROM (jr.created_at - jreq.created_at)) / 3600)
+         FROM job_responses jr JOIN job_requests jreq ON jreq.id = jr.job_request_id
+         WHERE jr.worker_id = w.id) as avg_response_hours
+      FROM workers w WHERE ${whereClause}
+      ORDER BY w.is_featured DESC, w.featured_order ASC, w.rating DESC, w.created_at DESC
+    `;
+
+    const result = await Promise.all(workers.map(async w => {
+      const thumb = await prisma.workerPortfolio.findFirst({
+        where: { worker_id: w.id },
+        select: { image_url: true }
+      });
       return { ...w, thumbnail: thumb ? thumb.image_url : null };
-    });
+    }));
+
     res.json({ workers: result });
   } catch (err) {
     console.error('Workers list error:', err);
@@ -59,46 +66,93 @@ router.get('/', (req, res) => {
   }
 });
 
-// GET /api/workers/:id — single worker profile
-router.get('/:id', (req, res) => {
+// GET /api/workers/my/profile — worker's own profile (must be before /:id)
+router.get('/my/profile', requireApi, async (req, res) => {
   try {
-    const worker = db.prepare(`
+    if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
+    const worker = await prisma.worker.findFirst({ where: { user_id: req.session.userId } });
+    if (!worker) return res.status(404).json({ error: 'notFound' });
+    const portfolio = await prisma.workerPortfolio.findMany({
+      where: { worker_id: worker.id }, orderBy: { id: 'desc' }
+    });
+    const calendar = await prisma.workerAvailabilityCalendar.findMany({
+      where: { worker_id: worker.id }
+    });
+    res.json({ worker, portfolio, calendar });
+  } catch (err) {
+    console.error('My profile error:', err);
+    res.status(500).json({ error: 'serverError' });
+  }
+});
+
+// GET /api/workers/me/availability/calendar — all saved dates (must be before /:id)
+router.get('/me/availability/calendar', requireApi, async (req, res) => {
+  try {
+    if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
+    const worker = await prisma.worker.findFirst({
+      where: { user_id: req.session.userId }, select: { id: true }
+    });
+    if (!worker) return res.status(404).json({ error: 'notFound' });
+    const dates = await prisma.workerAvailabilityCalendar.findMany({
+      where: { worker_id: worker.id },
+      select: { date: true, status: true }
+    });
+    res.json({ dates });
+  } catch (err) {
+    console.error('Calendar get error:', err);
+    res.status(500).json({ error: 'serverError' });
+  }
+});
+
+// GET /api/workers/:id — single worker profile
+router.get('/:id', async (req, res) => {
+  try {
+    const workerId = parseInt(req.params.id);
+    const workers = await prisma.$queryRaw`
       SELECT w.*,
-        (SELECT COUNT(*) FROM worker_views wv
+        (SELECT COUNT(*)::int FROM worker_views wv
          WHERE wv.worker_id = w.id
-         AND wv.viewed_at > datetime('now', '-7 days')) as weekly_views,
-        (SELECT COUNT(*) FROM ratings r WHERE r.worker_id = w.id) as review_count,
-        (SELECT COUNT(*) FROM job_responses jr WHERE jr.worker_id = w.id) as total_responses,
-        (SELECT AVG(CAST((julianday(jr.created_at) - julianday(jreq.created_at)) * 24 AS REAL))
+         AND wv.viewed_at > NOW() - INTERVAL '7 days') as weekly_views,
+        (SELECT COUNT(*)::int FROM ratings r WHERE r.worker_id = w.id) as review_count,
+        (SELECT COUNT(*)::int FROM job_responses jr WHERE jr.worker_id = w.id) as total_responses,
+        (SELECT AVG(EXTRACT(EPOCH FROM (jr.created_at - jreq.created_at)) / 3600)
          FROM job_responses jr JOIN job_requests jreq ON jreq.id = jr.job_request_id
          WHERE jr.worker_id = w.id) as avg_response_hours
-      FROM workers w WHERE w.id = ? AND w.approved = 1
-    `).get(req.params.id);
+      FROM workers w WHERE w.id = ${workerId} AND w.approved = true
+    `;
+    const worker = workers[0];
     if (!worker) return res.status(404).json({ error: 'notFound' });
 
-    const portfolio = db.prepare('SELECT * FROM worker_portfolio WHERE worker_id = ? ORDER BY id DESC').all(worker.id);
-    const ratings = db.prepare(`
+    const portfolio = await prisma.workerPortfolio.findMany({
+      where: { worker_id: worker.id }, orderBy: { id: 'desc' }
+    });
+    const ratings = await prisma.$queryRaw`
       SELECT r.*, u.name as customer_name
-      FROM ratings r
-      JOIN users u ON u.id = r.customer_id
-      WHERE r.worker_id = ?
+      FROM ratings r JOIN users u ON u.id = r.customer_id
+      WHERE r.worker_id = ${workerId}
       ORDER BY r.created_at DESC LIMIT 20
-    `).all(worker.id);
-    const calendar = db.prepare('SELECT * FROM worker_availability_calendar WHERE worker_id = ?').all(worker.id);
+    `;
+    const calendar = await prisma.workerAvailabilityCalendar.findMany({
+      where: { worker_id: worker.id }
+    });
 
     // Track view if logged in
     if (req.session && req.session.userId) {
       try {
-        const alreadyViewed = db.prepare(
-          `SELECT id FROM worker_views WHERE worker_id = ? AND user_id = ? AND viewed_at > datetime('now', '-7 days')`
-        ).get(worker.id, req.session.userId);
-        if (!alreadyViewed) {
-          db.prepare('INSERT INTO worker_views (worker_id, user_id) VALUES (?, ?)').run(worker.id, req.session.userId);
+        const alreadyViewed = await prisma.$queryRaw`
+          SELECT id FROM worker_views
+          WHERE worker_id = ${workerId} AND user_id = ${req.session.userId}
+          AND viewed_at > NOW() - INTERVAL '7 days'
+          LIMIT 1
+        `;
+        if (!alreadyViewed.length) {
+          await prisma.workerView.create({
+            data: { worker_id: workerId, user_id: req.session.userId }
+          });
         }
       } catch(e) {}
     }
 
-    // Hide contact info from guests
     const isLoggedIn = req.session && req.session.userId;
     const workerData = { ...worker };
     if (!isLoggedIn) {
@@ -114,32 +168,19 @@ router.get('/:id', (req, res) => {
   }
 });
 
-// GET /api/workers/my/profile — worker's own profile
-router.get('/my/profile', requireApi, (req, res) => {
-  try {
-    if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
-    const worker = db.prepare('SELECT * FROM workers WHERE user_id = ?').get(req.session.userId);
-    if (!worker) return res.status(404).json({ error: 'notFound' });
-    const portfolio = db.prepare('SELECT * FROM worker_portfolio WHERE worker_id = ? ORDER BY id DESC').all(worker.id);
-    const calendar = db.prepare('SELECT * FROM worker_availability_calendar WHERE worker_id = ?').all(worker.id);
-    res.json({ worker, portfolio, calendar });
-  } catch (err) {
-    console.error('My profile error:', err);
-    res.status(500).json({ error: 'serverError' });
-  }
-});
-
 // PUT /api/workers/my/profile — update worker profile
-router.put('/my/profile', requireApi, requireWorkerApproved, (req, res) => {
+router.put('/my/profile', requireApi, requireWorkerApproved, async (req, res) => {
   try {
     if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
     const { name, profession, experience, description, region, city, phone, telegram, instagram } = req.body;
-    const worker = db.prepare('SELECT * FROM workers WHERE user_id = ?').get(req.session.userId);
+    const worker = await prisma.worker.findFirst({ where: { user_id: req.session.userId } });
     if (!worker) return res.status(404).json({ error: 'notFound' });
-    db.prepare(
-      `UPDATE workers SET name=?, profession=?, experience=?, description=?, region=?, city=?, phone=?, telegram=?, instagram=? WHERE id=?`
-    ).run(name, profession, experience, description, region, city, phone, telegram || '', instagram || '', worker.id);
-    if (name) db.prepare('UPDATE users SET name=? WHERE id=?').run(name, req.session.userId);
+    await prisma.worker.update({
+      where: { id: worker.id },
+      data: { name, profession, experience, description, region, city, phone,
+              telegram: telegram || '', instagram: instagram || '' }
+    });
+    if (name) await prisma.user.update({ where: { id: req.session.userId }, data: { name } });
     res.json({ success: true });
   } catch (err) {
     console.error('Update profile error:', err);
@@ -147,19 +188,27 @@ router.put('/my/profile', requireApi, requireWorkerApproved, (req, res) => {
   }
 });
 
-// POST /api/workers/my/calendar — set calendar day
-router.post('/my/calendar', requireApi, requireWorkerApproved, (req, res) => {
+// POST /api/workers/my/calendar — set single calendar day
+router.post('/my/calendar', requireApi, requireWorkerApproved, async (req, res) => {
   try {
     if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
     const { date, status } = req.body;
-    const worker = db.prepare('SELECT id FROM workers WHERE user_id = ?').get(req.session.userId);
+    const worker = await prisma.worker.findFirst({
+      where: { user_id: req.session.userId }, select: { id: true }
+    });
     if (!worker) return res.status(404).json({ error: 'notFound' });
 
-    const existing = db.prepare('SELECT id FROM worker_availability_calendar WHERE worker_id = ? AND date = ?').get(worker.id, date);
+    const existing = await prisma.workerAvailabilityCalendar.findFirst({
+      where: { worker_id: worker.id, date }
+    });
     if (existing) {
-      db.prepare('UPDATE worker_availability_calendar SET status = ? WHERE id = ?').run(status, existing.id);
+      await prisma.workerAvailabilityCalendar.update({
+        where: { id: existing.id }, data: { status }
+      });
     } else {
-      db.prepare('INSERT INTO worker_availability_calendar (worker_id, date, status) VALUES (?, ?, ?)').run(worker.id, date, status);
+      await prisma.workerAvailabilityCalendar.create({
+        data: { worker_id: worker.id, date, status }
+      });
     }
     res.json({ success: true });
   } catch (err) {
@@ -168,44 +217,35 @@ router.post('/my/calendar', requireApi, requireWorkerApproved, (req, res) => {
   }
 });
 
-// GET /api/workers/me/availability/calendar — all saved dates
-router.get('/me/availability/calendar', requireApi, (req, res) => {
-  try {
-    if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
-    const worker = db.prepare('SELECT id FROM workers WHERE user_id = ?').get(req.session.userId);
-    if (!worker) return res.status(404).json({ error: 'notFound' });
-    const dates = db.prepare('SELECT date, status FROM worker_availability_calendar WHERE worker_id = ?').all(worker.id);
-    res.json({ dates });
-  } catch (err) {
-    console.error('Calendar get error:', err);
-    res.status(500).json({ error: 'serverError' });
-  }
-});
-
 // POST /api/workers/me/availability/calendar — replace all marked days at once
-router.post('/me/availability/calendar', requireApi, requireWorkerApproved, (req, res) => {
+router.post('/me/availability/calendar', requireApi, requireWorkerApproved, async (req, res) => {
   try {
     if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
     const { dates } = req.body;
-    const worker = db.prepare('SELECT id FROM workers WHERE user_id = ?').get(req.session.userId);
+    const worker = await prisma.worker.findFirst({
+      where: { user_id: req.session.userId }, select: { id: true }
+    });
     if (!worker) return res.status(404).json({ error: 'notFound' });
-    const del = db.prepare('DELETE FROM worker_availability_calendar WHERE worker_id = ?');
-    const ins = db.prepare('INSERT INTO worker_availability_calendar (worker_id, date, status) VALUES (?, ?, ?)');
-    const saveAll = db.transaction(function(rows) {
-      del.run(worker.id);
-      if (Array.isArray(rows)) {
-        rows.forEach(function(d) {
-          if (d.date && d.status) ins.run(worker.id, d.date, d.status);
-        });
+
+    await prisma.$transaction(async (tx) => {
+      await tx.workerAvailabilityCalendar.deleteMany({ where: { worker_id: worker.id } });
+      if (Array.isArray(dates)) {
+        for (const d of dates) {
+          if (d.date && d.status) {
+            await tx.workerAvailabilityCalendar.create({
+              data: { worker_id: worker.id, date: d.date, status: d.status }
+            });
+          }
+        }
       }
     });
-    saveAll(dates || []);
 
-    // Derive availability_status from calendar: busy today → busy, otherwise available
     const today = new Date().toISOString().slice(0, 10);
     const busyToday = Array.isArray(dates) && dates.some(d => d.date === today && d.status === 'busy');
-    db.prepare('UPDATE workers SET availability_status = ? WHERE id = ?')
-      .run(busyToday ? 'busy' : 'available', worker.id);
+    await prisma.worker.update({
+      where: { id: worker.id },
+      data: { availability_status: busyToday ? 'busy' : 'available' }
+    });
 
     res.json({ success: true });
   } catch (err) {
@@ -215,16 +255,18 @@ router.post('/me/availability/calendar', requireApi, requireWorkerApproved, (req
 });
 
 // POST /api/workers/my/portfolio — upload portfolio image
-router.post('/my/portfolio', requireApi, requireWorkerApproved, upload.single('image'), (req, res) => {
+router.post('/my/portfolio', requireApi, requireWorkerApproved, upload.single('image'), async (req, res) => {
   try {
     if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
     if (!req.file) return res.status(400).json({ error: 'noFile' });
-    const worker = db.prepare('SELECT id FROM workers WHERE user_id = ?').get(req.session.userId);
+    const worker = await prisma.worker.findFirst({
+      where: { user_id: req.session.userId }, select: { id: true }
+    });
     if (!worker) return res.status(404).json({ error: 'notFound' });
-    const count = db.prepare('SELECT COUNT(*) as cnt FROM worker_portfolio WHERE worker_id = ?').get(worker.id);
-    if (count.cnt >= 5) return res.status(400).json({ error: 'maxPortfolio' });
+    const count = await prisma.workerPortfolio.count({ where: { worker_id: worker.id } });
+    if (count >= 5) return res.status(400).json({ error: 'maxPortfolio' });
     const imageUrl = '/uploads/portfolio/' + req.file.filename;
-    db.prepare('INSERT INTO worker_portfolio (worker_id, image_url) VALUES (?, ?)').run(worker.id, imageUrl);
+    await prisma.workerPortfolio.create({ data: { worker_id: worker.id, image_url: imageUrl } });
     res.json({ success: true, image_url: imageUrl });
   } catch (err) {
     console.error('Portfolio upload error:', err);
@@ -233,19 +275,22 @@ router.post('/my/portfolio', requireApi, requireWorkerApproved, upload.single('i
 });
 
 // DELETE /api/workers/my/portfolio/:id
-router.delete('/my/portfolio/:id', requireApi, requireWorkerApproved, (req, res) => {
+router.delete('/my/portfolio/:id', requireApi, requireWorkerApproved, async (req, res) => {
   try {
     if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
-    const worker = db.prepare('SELECT id FROM workers WHERE user_id = ?').get(req.session.userId);
+    const worker = await prisma.worker.findFirst({
+      where: { user_id: req.session.userId }, select: { id: true }
+    });
     if (!worker) return res.status(404).json({ error: 'notFound' });
-    const img = db.prepare('SELECT * FROM worker_portfolio WHERE id = ? AND worker_id = ?').get(req.params.id, worker.id);
+    const img = await prisma.workerPortfolio.findFirst({
+      where: { id: parseInt(req.params.id), worker_id: worker.id }
+    });
     if (!img) return res.status(404).json({ error: 'notFound' });
-    // Delete file
     try {
       const filePath = path.join(__dirname, '..', 'public', img.image_url);
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     } catch(e) {}
-    db.prepare('DELETE FROM worker_portfolio WHERE id = ?').run(req.params.id);
+    await prisma.workerPortfolio.delete({ where: { id: parseInt(req.params.id) } });
     res.json({ success: true });
   } catch (err) {
     console.error('Portfolio delete error:', err);

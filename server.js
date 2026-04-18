@@ -2,14 +2,18 @@ require('dotenv').config();
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
-const db = require('./config/database');
+const prisma = require('./config/database');
 
 const app = express();
 
-// ── Session store ──
-const SQLiteStore = require('connect-sqlite3')(session);
+// ── Session store (PostgreSQL) ──
+const pgSession = require('connect-pg-simple')(session);
 app.use(session({
-  store: new SQLiteStore({ db: 'sessions.db', dir: process.env.DATA_DIR || './' }),
+  store: new pgSession({
+    conString: process.env.DATABASE_URL,
+    tableName: 'user_sessions',
+    createTableIfMissing: true
+  }),
   secret: process.env.SESSION_SECRET || 'ustatop-secret-2024',
   resave: false,
   saveUninitialized: false,
@@ -82,12 +86,13 @@ app.get('/admin-ustatop-secure-2024', requireAdmin, (req, res) =>
   res.sendFile(path.join(__dirname, 'views', 'admin.html')));
 
 // ── Job expiry check ──
-function expireOldRequests() {
+async function expireOldRequests() {
   try {
-    const result = db.prepare(
-      "UPDATE job_requests SET status = 'expired' WHERE expires_at < datetime('now') AND status = 'active'"
-    ).run();
-    if (result.changes > 0) console.log(`Expired ${result.changes} job request(s)`);
+    const result = await prisma.jobRequest.updateMany({
+      where: { expires_at: { lt: new Date() }, status: 'active' },
+      data: { status: 'expired' }
+    });
+    if (result.count > 0) console.log(`Expired ${result.count} job request(s)`);
   } catch (err) {
     console.error('Expiry check error:', err);
   }

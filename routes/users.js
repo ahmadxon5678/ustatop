@@ -1,14 +1,19 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const prisma = require('../config/database');
 const { requireApi } = require('../middleware/auth');
 
 // GET /api/users/profile
-router.get('/profile', requireApi, (req, res) => {
+router.get('/profile', requireApi, async (req, res) => {
   try {
-    const user = db.prepare(
-      'SELECT id, name, phone, region, city, additional_info, user_type, language, instagram_username, telegram_username, created_at FROM users WHERE id = ?'
-    ).get(req.session.userId);
+    const user = await prisma.user.findFirst({
+      where: { id: req.session.userId },
+      select: {
+        id: true, name: true, phone: true, region: true, city: true,
+        additional_info: true, user_type: true, language: true,
+        instagram_username: true, telegram_username: true, created_at: true
+      }
+    });
     if (!user) return res.status(404).json({ error: 'notFound' });
     res.json({ user });
   } catch (err) {
@@ -17,12 +22,19 @@ router.get('/profile', requireApi, (req, res) => {
 });
 
 // PUT /api/users/profile
-router.put('/profile', requireApi, (req, res) => {
+router.put('/profile', requireApi, async (req, res) => {
   try {
     const { name, region, city, additional_info, instagram_username, telegram_username } = req.body;
     if (!name || !region || !city) return res.status(400).json({ error: 'missingFields' });
-    db.prepare('UPDATE users SET name=?, region=?, city=?, additional_info=?, instagram_username=?, telegram_username=? WHERE id=?')
-      .run(name, region, city, additional_info || '', instagram_username || null, telegram_username || null, req.session.userId);
+    await prisma.user.update({
+      where: { id: req.session.userId },
+      data: {
+        name, region, city,
+        additional_info: additional_info || '',
+        instagram_username: instagram_username || null,
+        telegram_username: telegram_username || null
+      }
+    });
     req.session.userName = name;
     res.json({ success: true });
   } catch (err) {
@@ -31,11 +43,11 @@ router.put('/profile', requireApi, (req, res) => {
 });
 
 // PUT /api/users/language
-router.put('/language', requireApi, (req, res) => {
+router.put('/language', requireApi, async (req, res) => {
   try {
     const { language } = req.body;
-    if (!['uz','ru'].includes(language)) return res.status(400).json({ error: 'invalid' });
-    db.prepare('UPDATE users SET language = ? WHERE id = ?').run(language, req.session.userId);
+    if (!['uz', 'ru'].includes(language)) return res.status(400).json({ error: 'invalid' });
+    await prisma.user.update({ where: { id: req.session.userId }, data: { language } });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'serverError' });

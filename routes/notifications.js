@@ -1,18 +1,20 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const prisma = require('../config/database');
 const { requireApi } = require('../middleware/auth');
 
 // GET /api/notifications
-router.get('/', requireApi, (req, res) => {
+router.get('/', requireApi, async (req, res) => {
   try {
-    const notifs = db.prepare(
-      'SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT 50'
-    ).all(req.session.userId);
-    const unread = db.prepare(
-      'SELECT COUNT(*) as cnt FROM notifications WHERE user_id = ? AND is_read = 0'
-    ).get(req.session.userId);
-    res.json({ notifications: notifs, unread: unread.cnt });
+    const notifs = await prisma.notification.findMany({
+      where: { user_id: req.session.userId },
+      orderBy: { created_at: 'desc' },
+      take: 50
+    });
+    const unread = await prisma.notification.count({
+      where: { user_id: req.session.userId, is_read: false }
+    });
+    res.json({ notifications: notifs, unread });
   } catch (err) {
     console.error('Notifications error:', err);
     res.status(500).json({ error: 'serverError' });
@@ -20,9 +22,12 @@ router.get('/', requireApi, (req, res) => {
 });
 
 // POST /api/notifications/read-all
-router.post('/read-all', requireApi, (req, res) => {
+router.post('/read-all', requireApi, async (req, res) => {
   try {
-    db.prepare('UPDATE notifications SET is_read = 1 WHERE user_id = ?').run(req.session.userId);
+    await prisma.notification.updateMany({
+      where: { user_id: req.session.userId },
+      data: { is_read: true }
+    });
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'serverError' });

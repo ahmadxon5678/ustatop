@@ -1,4 +1,4 @@
-const db = require('../config/database');
+const prisma = require('../config/database');
 
 function getCorrectDashboard(userType) {
   if (userType === 'customer') return '/dashboard/customer';
@@ -45,15 +45,23 @@ function requireApi(req, res, next) {
   next();
 }
 
-function requireWorkerApproved(req, res, next) {
-  if (!req.session || !req.session.userId) {
-    return res.status(401).json({ error: 'notLoggedIn' });
+async function requireWorkerApproved(req, res, next) {
+  try {
+    if (!req.session || !req.session.userId) {
+      return res.status(401).json({ error: 'notLoggedIn' });
+    }
+    const worker = await prisma.worker.findFirst({
+      where: { user_id: req.session.userId },
+      select: { approved: true }
+    });
+    if (!worker || !worker.approved) {
+      return res.status(403).json({ error: 'notApproved' });
+    }
+    next();
+  } catch (err) {
+    console.error('requireWorkerApproved error:', err);
+    return res.status(500).json({ error: 'serverError' });
   }
-  const worker = db.prepare('SELECT approved FROM workers WHERE user_id = ?').get(req.session.userId);
-  if (!worker || worker.approved !== 1) {
-    return res.status(403).json({ error: 'notApproved' });
-  }
-  next();
 }
 
 module.exports = { requireLogin, requireCustomer, requireWorker, requireShop, requireApi, requireWorkerApproved, getCorrectDashboard };

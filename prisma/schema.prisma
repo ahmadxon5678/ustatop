@@ -1,0 +1,282 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 Int       @id @default(autoincrement())
+  name               String
+  phone              String    @unique
+  password           String    @default("")
+  region             String?
+  city               String?
+  additional_info    String?
+  user_type          String
+  status             String    @default("active")
+  language           String    @default("uz")
+  instagram_username String?
+  telegram_username  String?
+  created_at         DateTime  @default(now())
+
+  worker             Worker?
+  shop               Shop?
+  job_requests       JobRequest[]
+  worker_views       WorkerView[]
+  ratings            Rating[]
+  product_reviews    ProductReview[]
+  bookmarks          Bookmark[]
+  notifications      Notification[]
+  worker_submissions WorkerSubmission[]
+  shop_submissions   ShopSubmission[]
+
+  @@map("users")
+}
+
+model Worker {
+  id                  Int       @id @default(autoincrement())
+  user_id             Int?      @unique
+  name                String
+  profession          String
+  experience          String?
+  description         String?
+  region              String?
+  city                String?
+  phone               String?
+  telegram            String?
+  instagram           String?
+  rating              Float     @default(0)
+  availability_status String    @default("available")
+  approved            Boolean   @default(false)
+  last_seen           DateTime?
+  is_featured         Boolean   @default(false)
+  featured_order      Int       @default(0)
+  is_verified         Boolean   @default(false)
+  verified_at         DateTime?
+  is_ustoz            Boolean   @default(false)
+  created_at          DateTime  @default(now())
+
+  user                    User?                        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  portfolio               WorkerPortfolio[]
+  availability_calendar   WorkerAvailabilityCalendar[]
+  worker_views            WorkerView[]
+  job_responses           JobResponse[]
+  ratings                 Rating[]
+  bookmarks               Bookmark[]
+
+  @@map("workers")
+}
+
+model WorkerPortfolio {
+  id         Int       @id @default(autoincrement())
+  worker_id  Int?
+  image_url  String
+  created_at DateTime  @default(now())
+
+  worker     Worker?   @relation(fields: [worker_id], references: [id], onDelete: Cascade)
+
+  @@map("worker_portfolio")
+}
+
+model WorkerAvailabilityCalendar {
+  id        Int     @id @default(autoincrement())
+  worker_id Int?
+  date      String
+  status    String
+
+  worker    Worker? @relation(fields: [worker_id], references: [id], onDelete: Cascade)
+
+  @@map("worker_availability_calendar")
+}
+
+model WorkerView {
+  id        Int      @id @default(autoincrement())
+  worker_id Int?
+  user_id   Int?
+  viewed_at DateTime @default(now())
+
+  worker    Worker?  @relation(fields: [worker_id], references: [id], onDelete: Cascade)
+  user      User?    @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("worker_views")
+}
+
+model Shop {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?      @unique
+  shop_name     String
+  owner_name    String
+  phone         String?
+  telegram      String?
+  instagram     String?
+  region        String?
+  city          String?
+  description   String?
+  product_types String?
+  approved      Boolean   @default(false)
+  created_at    DateTime  @default(now())
+
+  user          User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  products      Product[]
+
+  @@map("shops")
+}
+
+model Product {
+  id           Int       @id @default(autoincrement())
+  shop_id      Int?
+  product_name String
+  price        String
+  description  String?
+  product_type String?
+  seller_phone String?
+  rating       Float     @default(0)
+  created_at   DateTime  @default(now())
+
+  shop         Shop?     @relation(fields: [shop_id], references: [id], onDelete: SetNull)
+  reviews      ProductReview[]
+
+  @@map("products")
+}
+
+model JobRequest {
+  id                Int       @id @default(autoincrement())
+  user_id           Int?
+  title             String
+  description       String?
+  profession_needed String?
+  region            String?
+  city              String?
+  phone             String
+  status            String    @default("active")
+  expires_at        DateTime?
+  is_urgent         Boolean   @default(false)
+  budget_from       Int?
+  budget_to         Int?
+  created_at        DateTime  @default(now())
+
+  user              User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  job_responses     JobResponse[]
+
+  @@map("job_requests")
+}
+
+model JobResponse {
+  id             Int       @id @default(autoincrement())
+  job_request_id Int?
+  worker_id      Int?
+  message        String
+  price_from     Int?
+  price_to       Int?
+  price_note     String?
+  created_at     DateTime  @default(now())
+
+  job_request    JobRequest? @relation(fields: [job_request_id], references: [id], onDelete: Cascade)
+  worker         Worker?     @relation(fields: [worker_id], references: [id], onDelete: Cascade)
+  ratings        Rating[]
+
+  @@map("job_responses")
+}
+
+model Rating {
+  id              Int       @id @default(autoincrement())
+  worker_id       Int?
+  customer_id     Int?
+  job_response_id Int?
+  stars           Int
+  review          String
+  photo           String?
+  created_at      DateTime  @default(now())
+
+  worker          Worker?      @relation(fields: [worker_id], references: [id], onDelete: Cascade)
+  customer        User?        @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  job_response    JobResponse? @relation(fields: [job_response_id], references: [id])
+
+  @@unique([worker_id, customer_id])
+  @@map("ratings")
+}
+
+model ProductReview {
+  id         Int       @id @default(autoincrement())
+  product_id Int?
+  user_id    Int?
+  stars      Int
+  review     String
+  photo      String?
+  created_at DateTime  @default(now())
+
+  product    Product?  @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  user       User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@unique([product_id, user_id])
+  @@map("product_reviews")
+}
+
+model Bookmark {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  worker_id  Int?
+  created_at DateTime  @default(now())
+
+  user       User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  worker     Worker?   @relation(fields: [worker_id], references: [id], onDelete: Cascade)
+
+  @@unique([user_id, worker_id])
+  @@map("bookmarks")
+}
+
+model Notification {
+  id         Int       @id @default(autoincrement())
+  user_id    Int?
+  message_uz String
+  message_ru String
+  is_read    Boolean   @default(false)
+  created_at DateTime  @default(now())
+
+  user       User?     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
+
+model WorkerSubmission {
+  id          Int       @id @default(autoincrement())
+  user_id     Int?
+  name        String?
+  profession  String?
+  region      String?
+  city        String?
+  experience  String?
+  description String?
+  phone       String?
+  telegram    String?
+  instagram   String?
+  status      String    @default("pending")
+  created_at  DateTime  @default(now())
+
+  user        User?     @relation(fields: [user_id], references: [id])
+
+  @@map("worker_submissions")
+}
+
+model ShopSubmission {
+  id            Int       @id @default(autoincrement())
+  user_id       Int?
+  shop_name     String?
+  owner_name    String?
+  phone         String?
+  telegram      String?
+  instagram     String?
+  region        String?
+  city          String?
+  description   String?
+  product_types String?
+  status        String    @default("pending")
+  created_at    DateTime  @default(now())
+
+  user          User?     @relation(fields: [user_id], references: [id])
+
+  @@map("shop_submissions")
+}

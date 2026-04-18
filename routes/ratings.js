@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/database');
+const prisma = require('../config/database');
 const { requireApi } = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
@@ -27,9 +27,7 @@ const imageFilter = (req, file, cb) => {
 const upload = multer({ storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: imageFilter });
 
 // POST /api/ratings
-// Accepts: target_id, target_type ('worker'|'material'), stars, review, photo
-// Also accepts legacy: worker_id (treated as target_type='worker')
-router.post('/', requireApi, upload.single('photo'), (req, res) => {
+router.post('/', requireApi, upload.single('photo'), async (req, res) => {
   try {
     const { target_type, stars, review, job_response_id } = req.body;
     const target_id = parseInt(req.body.target_id || req.body.worker_id);
@@ -58,99 +56,104 @@ router.post('/', requireApi, upload.single('photo'), (req, res) => {
   }
 });
 
-function handleWorkerReview(req, res, workerId, stars, review, photoUrl, jobResponseId) {
-  // Fetch worker to validate existence and check self-rating
-  const worker = db.prepare('SELECT id, user_id FROM workers WHERE id = ?').get(workerId);
+async function handleWorkerReview(req, res, workerId, stars, review, photoUrl, jobResponseId) {
+  const worker = await prisma.worker.findFirst({
+    where: { id: workerId }, select: { id: true, user_id: true }
+  });
   if (!worker) return res.status(404).json({ error: 'notFound' });
 
-  // Self-rating guard
   if (worker.user_id === req.session.userId) {
     return res.status(403).json({ error: 'You cannot rate your own profile.' });
   }
 
-  // Optional: verify job_response belongs to this worker+customer pair
   if (jobResponseId) {
-    const jres = db.prepare(`
+    const jres = await prisma.$queryRaw`
       SELECT jres.id FROM job_responses jres
       JOIN job_requests jr ON jr.id = jres.job_request_id
-      WHERE jres.id = ? AND jres.worker_id = ? AND jr.user_id = ?
-    `).get(jobResponseId, workerId, req.session.userId);
-    if (!jres) return res.status(403).json({ error: 'notAllowed' });
+      WHERE jres.id = ${parseInt(jobResponseId)} AND jres.worker_id = ${workerId} AND jr.user_id = ${req.session.userId}
+      LIMIT 1
+    `;
+    if (!jres.length) return res.status(403).json({ error: 'notAllowed' });
   }
 
-  // Duplicate guard
-  const existing = db.prepare('SELECT id FROM ratings WHERE worker_id = ? AND customer_id = ?')
-    .get(workerId, req.session.userId);
+  const existing = await prisma.rating.findFirst({
+    where: { worker_id: workerId, customer_id: req.session.userId }
+  });
   if (existing) return res.status(400).json({ error: 'alreadyRated' });
 
-  // Insert review
-  db.prepare(
-    `INSERT INTO ratings (worker_id, customer_id, job_response_id, stars, review, photo)
-     VALUES (?, ?, ?, ?, ?, ?)`
-  ).run(workerId, req.session.userId, jobResponseId || null, stars, review, photoUrl);
+  await prisma.rating.create({
+    data: {
+      worker_id: workerId,
+      customer_id: req.session.userId,
+      job_response_id: jobResponseId ? parseInt(jobResponseId) : null,
+      stars, review, photo: photoUrl
+    }
+  });
 
-  // Recalculate average and update workers.rating
-  const avg = db.prepare('SELECT AVG(stars) as avg FROM ratings WHERE worker_id = ?').get(workerId);
-  db.prepare('UPDATE workers SET rating = ? WHERE id = ?').run(
-    Math.round((avg.avg || 0) * 10) / 10,
-    workerId
-  );
+  const avg = await prisma.rating.aggregate({
+    where: { worker_id: workerId }, _avg: { stars: true }
+  });
+  await prisma.worker.update({
+    where: { id: workerId },
+    data: { rating: Math.round((avg._avg.stars || 0) * 10) / 10 }
+  });
 
-  // Notify worker
   try {
-    db.prepare('INSERT INTO notifications (user_id, message_uz, message_ru) VALUES (?, ?, ?)')
-      .run(worker.user_id, 'Yangi sharh va baho oldingiz!', 'Вы получили новый отзыв!');
+    await prisma.notification.create({
+      data: {
+        user_id: worker.user_id,
+        message_uz: 'Yangi sharh va baho oldingiz!',
+        message_ru: 'Вы получили новый отзыв!'
+      }
+    });
   } catch (_) {}
 
   return res.json({ success: true });
 }
 
-function handleMaterialReview(req, res, productId, stars, review, photoUrl) {
-  // Fetch product + shop owner to validate existence and check owner-rating
-  const product = db.prepare(`
+async function handleMaterialReview(req, res, productId, stars, review, photoUrl) {
+  const product = await prisma.$queryRaw`
     SELECT p.id, s.user_id AS shop_user_id
-    FROM products p
-    LEFT JOIN shops s ON s.id = p.shop_id
-    WHERE p.id = ?
-  `).get(productId);
-  if (!product) return res.status(404).json({ error: 'notFound' });
+    FROM products p LEFT JOIN shops s ON s.id = p.shop_id
+    WHERE p.id = ${productId}
+    LIMIT 1
+  `;
+  if (!product.length) return res.status(404).json({ error: 'notFound' });
+  const p = product[0];
 
-  // Material owner guard
-  if (product.shop_user_id && product.shop_user_id === req.session.userId) {
+  if (p.shop_user_id && p.shop_user_id === req.session.userId) {
     return res.status(403).json({ error: 'You cannot rate your own product.' });
   }
 
-  // Duplicate guard
-  const existing = db.prepare('SELECT id FROM product_reviews WHERE product_id = ? AND user_id = ?')
-    .get(productId, req.session.userId);
+  const existing = await prisma.productReview.findFirst({
+    where: { product_id: productId, user_id: req.session.userId }
+  });
   if (existing) return res.status(400).json({ error: 'alreadyRated' });
 
-  // Insert review
-  db.prepare(
-    `INSERT INTO product_reviews (product_id, user_id, stars, review, photo)
-     VALUES (?, ?, ?, ?, ?)`
-  ).run(productId, req.session.userId, stars, review, photoUrl);
+  await prisma.productReview.create({
+    data: { product_id: productId, user_id: req.session.userId, stars, review, photo: photoUrl }
+  });
 
-  // Recalculate average and update products.rating
-  const avg = db.prepare('SELECT AVG(stars) as avg FROM product_reviews WHERE product_id = ?').get(productId);
-  db.prepare('UPDATE products SET rating = ? WHERE id = ?').run(
-    Math.round((avg.avg || 0) * 10) / 10,
-    productId
-  );
+  const avg = await prisma.productReview.aggregate({
+    where: { product_id: productId }, _avg: { stars: true }
+  });
+  await prisma.product.update({
+    where: { id: productId },
+    data: { rating: Math.round((avg._avg.stars || 0) * 10) / 10 }
+  });
 
   return res.json({ success: true });
 }
 
 // GET /api/ratings/worker/:id — all reviews for a worker
-router.get('/worker/:id', (req, res) => {
+router.get('/worker/:id', async (req, res) => {
   try {
-    const ratings = db.prepare(`
+    const ratings = await prisma.$queryRaw`
       SELECT r.*, u.name AS customer_name
-      FROM ratings r
-      JOIN users u ON u.id = r.customer_id
-      WHERE r.worker_id = ?
+      FROM ratings r JOIN users u ON u.id = r.customer_id
+      WHERE r.worker_id = ${parseInt(req.params.id)}
       ORDER BY r.created_at DESC
-    `).all(req.params.id);
+    `;
     res.json({ ratings });
   } catch (err) {
     res.status(500).json({ error: 'serverError' });
@@ -158,15 +161,14 @@ router.get('/worker/:id', (req, res) => {
 });
 
 // GET /api/ratings/product/:id — all reviews for a product
-router.get('/product/:id', (req, res) => {
+router.get('/product/:id', async (req, res) => {
   try {
-    const reviews = db.prepare(`
+    const reviews = await prisma.$queryRaw`
       SELECT pr.*, u.name AS reviewer_name
-      FROM product_reviews pr
-      JOIN users u ON u.id = pr.user_id
-      WHERE pr.product_id = ?
+      FROM product_reviews pr JOIN users u ON u.id = pr.user_id
+      WHERE pr.product_id = ${parseInt(req.params.id)}
       ORDER BY pr.created_at DESC
-    `).all(req.params.id);
+    `;
     res.json({ reviews });
   } catch (err) {
     res.status(500).json({ error: 'serverError' });
@@ -174,18 +176,19 @@ router.get('/product/:id', (req, res) => {
 });
 
 // GET /api/ratings/my — worker's received reviews
-router.get('/my', requireApi, (req, res) => {
+router.get('/my', requireApi, async (req, res) => {
   try {
     if (req.session.userType !== 'worker') return res.status(403).json({ error: 'forbidden' });
-    const worker = db.prepare('SELECT id FROM workers WHERE user_id = ?').get(req.session.userId);
+    const worker = await prisma.worker.findFirst({
+      where: { user_id: req.session.userId }, select: { id: true }
+    });
     if (!worker) return res.json({ ratings: [] });
-    const ratings = db.prepare(`
+    const ratings = await prisma.$queryRaw`
       SELECT r.*, u.name AS customer_name
-      FROM ratings r
-      JOIN users u ON u.id = r.customer_id
-      WHERE r.worker_id = ?
+      FROM ratings r JOIN users u ON u.id = r.customer_id
+      WHERE r.worker_id = ${worker.id}
       ORDER BY r.created_at DESC
-    `).all(worker.id);
+    `;
     res.json({ ratings });
   } catch (err) {
     res.status(500).json({ error: 'serverError' });
