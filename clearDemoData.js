@@ -56,7 +56,7 @@ async function clear() {
   });
 
   console.log(`\n✅ ${deleted.count} demo foydalanuvchi o'chirildi (ustalar, do'konlar, mijozlar)`);
-  console.log('   Barcha bog'liq ma\'lumotlar (portfolio, kafel, reyting va boshqalar) ham o\'chirildi.');
+  console.log('   Barcha bog\'liq ma\'lumotlar (portfolio, kafel, reyting va boshqalar) ham o\'chirildi.');
   console.log('\n🧹 Baza toza. Haqiqiy foydalanuvchi ma\'lumotlariga tegmadik.');
 
   await prisma.$disconnect();

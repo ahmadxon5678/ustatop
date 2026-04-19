@@ -1226,7 +1226,59 @@ textarea.form-input { resize: vertical; min-height: 80px; }
   height: 100%;
   object-fit: cover;
   display: block;
+  flex-shrink: 0;
 }
+.mkt-img-slides {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease;
+}
+.mkt-img-slides img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.mkt-img-prev,
+.mkt-img-next {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  border: none;
+  width: 26px;
+  height: 36px;
+  border-radius: 4px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.mkt-img-prev { left: 4px; }
+.mkt-img-next { right: 4px; }
+.mkt-img-dots {
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  z-index: 2;
+}
+.mkt-img-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.45);
+  transition: background 0.2s;
+}
+.mkt-img-dot.active { background: #fff; }
 .mkt-card-img-placeholder {
   opacity: 0.45;
   display: flex;

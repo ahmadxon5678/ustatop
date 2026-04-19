@@ -60,13 +60,27 @@ router.get('/', async (req, res) => {
       ${orderClause}
     `;
 
+    const productIds = products.map(p => Number(p.id));
+    const imageRows = productIds.length > 0
+      ? await prisma.productImage.findMany({
+          where: { product_id: { in: productIds } },
+          orderBy: { sort_order: 'asc' }
+        })
+      : [];
+    const imagesByProduct = {};
+    imageRows.forEach(img => {
+      if (!imagesByProduct[img.product_id]) imagesByProduct[img.product_id] = [];
+      imagesByProduct[img.product_id].push(img.image_url);
+    });
+
     const isLoggedIn = req.session && req.session.userId;
     const result = products.map(p => ({
       ...p,
       seller_phone: isLoggedIn ? (p.shop_phone || p.seller_phone) : null,
       shop_phone: isLoggedIn ? p.shop_phone : null,
       shop_telegram: p.shop_telegram || null,
-      shop_instagram: p.shop_instagram || null
+      shop_instagram: p.shop_instagram || null,
+      images: imagesByProduct[Number(p.id)] || []
     }));
     res.json({ products: result });
   } catch (err) {

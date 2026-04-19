@@ -186,6 +186,21 @@ function updateCount(n) {
   if (el) el.textContent = n + ' ta mahsulot mavjud';
 }
 
+// ── Image slideshow ──
+function slideImg(e, cardId, dir) {
+  e.stopPropagation();
+  var wrap = document.getElementById(cardId);
+  if (!wrap) return;
+  var slides = wrap.querySelectorAll('img');
+  var total = slides.length;
+  var idx = parseInt(wrap.dataset.idx || '0', 10);
+  idx = (idx + dir + total) % total;
+  wrap.dataset.idx = idx;
+  wrap.style.transform = 'translateX(-' + (idx * 100) + '%)';
+  var dots = wrap.parentNode.querySelectorAll('.mkt-img-dot');
+  dots.forEach(function(d, i) { d.classList.toggle('active', i === idx); });
+}
+
 // ── Helpers ──
 function escHtml(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
@@ -215,11 +230,31 @@ function renderProducts(products) {
     var priceStr = !isNaN(price) ? price.toLocaleString('uz-UZ') + " so'm" : escHtml(p.price);
 
     // ── Image / placeholder ──
+    var imgs = (p.images && p.images.length > 0) ? p.images : [];
+    var imgInner = '';
+    if (imgs.length > 0) {
+      var cardId = 'pcard-' + p.id;
+      imgInner = '<div class="mkt-img-slides" id="' + cardId + '" data-idx="0">';
+      imgs.forEach(function(url) {
+        imgInner += '<img src="' + escHtml(url) + '" alt="' + escHtml(p.product_name) + '" class="mkt-card-img-photo">';
+      });
+      imgInner += '</div>';
+      if (imgs.length > 1) {
+        imgInner +=
+          '<button class="mkt-img-prev" onclick="slideImg(event,\'' + cardId + '\',-1)">&#8249;</button>' +
+          '<button class="mkt-img-next" onclick="slideImg(event,\'' + cardId + '\',1)">&#8250;</button>' +
+          '<div class="mkt-img-dots">' +
+            imgs.map(function(_, i) {
+              return '<span class="mkt-img-dot' + (i === 0 ? ' active' : '') + '" id="' + cardId + '-dot-' + i + '"></span>';
+            }).join('') +
+          '</div>';
+      }
+    } else {
+      imgInner = '<div class="mkt-card-img-placeholder">' + MSVG.box + '</div>';
+    }
     var imgSection =
-      '<div class="mkt-card-img" style="background:' + theme.bg + '">' +
-        (p.image_url
-          ? '<img src="' + escHtml(p.image_url) + '" alt="' + escHtml(p.product_name) + '" class="mkt-card-img-photo">'
-          : '<div class="mkt-card-img-placeholder">' + MSVG.box + '</div>') +
+      '<div class="mkt-card-img" style="background:' + (imgs.length > 0 ? '#1a1a1a' : theme.bg) + '">' +
+        imgInner +
         (p.product_type
           ? '<div class="mkt-card-type-badge">' + escHtml(p.product_type) + '</div>'
           : '') +

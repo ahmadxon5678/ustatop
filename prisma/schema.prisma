@@ -136,10 +136,23 @@ model Product {
   rating       Float     @default(0)
   created_at   DateTime  @default(now())
 
-  shop         Shop?     @relation(fields: [shop_id], references: [id], onDelete: SetNull)
+  shop         Shop?          @relation(fields: [shop_id], references: [id], onDelete: SetNull)
   reviews      ProductReview[]
+  images       ProductImage[]
 
   @@map("products")
+}
+
+model ProductImage {
+  id         Int      @id @default(autoincrement())
+  product_id Int?
+  image_url  String
+  sort_order Int      @default(0)
+  created_at DateTime @default(now())
+
+  product    Product? @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("product_images")
 }
 
 model JobRequest {

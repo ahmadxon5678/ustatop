@@ -28,10 +28,7 @@ const workers = [
       { date: '2026-04-20', status: 'busy' },
       { date: '2026-04-21', status: 'busy' },
     ],
-    ratings: [
-      { stars: 5, review: "Juda zo'r elektrik, ishni tez va sifatli bajardi!" },
-      { stars: 5, review: 'Narx yaxshi, vaqtida keldi. Tavsiya qilaman.' },
-    ],
+    ratings: [{ stars: 5, review: "Juda zo'r elektrik, ishni tez va sifatli bajardi!" }],
   },
   {
     phone: '+998000000002',
@@ -49,13 +46,8 @@ const workers = [
       'https://picsum.photos/seed/plumb1/600/400',
       'https://picsum.photos/seed/plumb2/600/400',
     ],
-    calendar: [
-      { date: '2026-04-22', status: 'busy' },
-    ],
-    ratings: [
-      { stars: 5, review: "Santexnik bo'yicha eng yaxshisi! Muammoni darhol hal qildi." },
-      { stars: 4, review: 'Yaxshi usta, narxlari ham qulayroq.' },
-    ],
+    calendar: [{ date: '2026-04-22', status: 'busy' }],
+    ratings: [{ stars: 5, review: "Santexnik bo'yicha eng yaxshisi! Muammoni darhol hal qildi." }],
   },
   {
     phone: '+998000000003',
@@ -80,9 +72,7 @@ const workers = [
       { date: '2026-04-21', status: 'busy' },
       { date: '2026-04-23', status: 'busy' },
     ],
-    ratings: [
-      { stars: 5, review: "Ajoyib duradgor! Mebel juda chiroyli chiqdi." },
-    ],
+    ratings: [{ stars: 5, review: "Ajoyib duradgor! Mebel juda chiroyli chiqdi." }],
   },
   {
     phone: '+998000000004',
@@ -101,10 +91,7 @@ const workers = [
       'https://picsum.photos/seed/plast2/600/400',
     ],
     calendar: [],
-    ratings: [
-      { stars: 5, review: "Devorlar superdek tekis! Rahmat Ulugbek aka." },
-      { stars: 4, review: 'Yaxshi ishdi, vaqtida tugatdi.' },
-    ],
+    ratings: [{ stars: 5, review: "Devorlar superdek tekis! Rahmat Ulugbek aka." }],
   },
   {
     phone: '+998000000005',
@@ -113,7 +100,7 @@ const workers = [
     region: 'Farg\'ona',
     city: 'Farg\'ona',
     experience: '4 yil',
-    description: "Xona va uylarni bo'yash, devorga dekor ishlar. Sifatli bo'yoqlar ishlatiladi.",
+    description: "Xona va uylarni bo'yash, devorga dekor ishlar.",
     rating: 4.3,
     is_verified: true,
     is_featured: false,
@@ -122,12 +109,8 @@ const workers = [
       'https://picsum.photos/seed/paint1/600/400',
       'https://picsum.photos/seed/paint2/600/400',
     ],
-    calendar: [
-      { date: '2026-04-24', status: 'busy' },
-    ],
-    ratings: [
-      { stars: 4, review: "Bo'yoq ishlari zo'r chiqdi, rahmat!" },
-    ],
+    calendar: [{ date: '2026-04-24', status: 'busy' }],
+    ratings: [{ stars: 4, review: "Bo'yoq ishlari zo'r chiqdi, rahmat!" }],
   },
   {
     phone: '+998000000006',
@@ -136,7 +119,7 @@ const workers = [
     region: 'Buxoro',
     city: 'Buxoro',
     experience: '9 yil',
-    description: "Hammom, oshxona va polga kafel yotqizish. 9 yillik tajriba bor.",
+    description: "Hammom, oshxona va polga kafel yotqizish. 9 yillik tajriba.",
     rating: 4.7,
     is_verified: true,
     is_featured: false,
@@ -147,10 +130,7 @@ const workers = [
       'https://picsum.photos/seed/tile3/600/400',
     ],
     calendar: [],
-    ratings: [
-      { stars: 5, review: "Kafelni juda chiroyli yotqizdi, hamma hayron qoldi!" },
-      { stars: 5, review: 'Eng yaxshi kafelchi! Tavsiya qilaman.' },
-    ],
+    ratings: [{ stars: 5, review: "Kafelni juda chiroyli yotqizdi, hamma hayron qoldi!" }],
   },
   {
     phone: '+998000000007',
@@ -159,14 +139,12 @@ const workers = [
     region: 'Namangan',
     city: 'Namangan',
     experience: '7 yil',
-    description: "Tom qoplash, profil list o'rnatish, yomg'irdan himoya. Kafolat bilan.",
+    description: "Tom qoplash, profil list o'rnatish, yomg'irdan himoya.",
     rating: 4.4,
     is_verified: false,
     is_featured: false,
     featured_order: 0,
-    portfolio: [
-      'https://picsum.photos/seed/roof1/600/400',
-    ],
+    portfolio: ['https://picsum.photos/seed/roof1/600/400'],
     calendar: [],
     ratings: [],
   },
@@ -177,7 +155,7 @@ const workers = [
     region: 'Toshkent',
     city: 'Chirchiq',
     experience: '10 yil',
-    description: "Darvoza, to'siq, zinapoya, temir konstruksiyalar. Individual buyurtmalar qabul qilinadi.",
+    description: "Darvoza, to'siq, zinapoya, temir konstruksiyalar. Individual buyurtmalar.",
     rating: 4.6,
     is_verified: false,
     is_featured: false,
@@ -199,14 +177,12 @@ const workers = [
     region: 'Toshkent',
     city: 'Toshkent',
     experience: '3 yil',
-    description: "Konditsioner o'rnatish, texnik xizmat, ta'mirlash. Tez va sifatli.",
+    description: "Konditsioner o'rnatish, texnik xizmat, ta'mirlash.",
     rating: 4.2,
     is_verified: false,
     is_featured: false,
     featured_order: 0,
-    portfolio: [
-      'https://picsum.photos/seed/ac1/600/400',
-    ],
+    portfolio: ['https://picsum.photos/seed/ac1/600/400'],
     calendar: [],
     ratings: [],
   },
@@ -233,12 +209,11 @@ const workers = [
       { date: '2026-04-22', status: 'busy' },
       { date: '2026-04-23', status: 'busy' },
     ],
-    ratings: [
-      { stars: 5, review: "15 yillik tajriba seziladi. Ish sifati yuqori darajada!" },
-    ],
+    ratings: [{ stars: 5, review: "15 yillik tajriba seziladi. Ish sifati yuqori darajada!" }],
   },
 ];
 
+// Realistic Uzbek construction market prices (2026)
 const shops = [
   {
     phone: '+998000000011',
@@ -249,12 +224,61 @@ const shops = [
     description: "Barcha turdagi qurilish materiallari. Ulgurji va chakana savdo.",
     product_types: "Sement, qum, g'isht, armatür",
     products: [
-      { product_name: "Sement M400 (50 kg)", price: "45 000 so'm", product_type: "Sement", description: "Yuqori sifatli M400 sement, qurilish va ta'mirlash uchun." },
-      { product_name: "G'isht qizil (dona)", price: "1 200 so'm", product_type: "G'isht", description: "Qizil g'isht, standart o'lcham 250x120x65 mm." },
-      { product_name: "Qum (1 tonna)", price: "350 000 so'm", product_type: "Qum", description: "Toza daryo qumi, qurilish ishlariga mos." },
-      { product_name: "Armatür 12mm (1 metr)", price: "12 000 so'm", product_type: "Armatür", description: "A400 markali armatür, poydevor va beton uchun." },
-      { product_name: "Shag'al (1 tonna)", price: "280 000 so'm", product_type: "Shag'al", description: "Beton aralashmasiga mos shag'al." },
-      { product_name: "Sement M500 (50 kg)", price: "55 000 so'm", product_type: "Sement", description: "Mustahkam M500 sement, yuqori yuklamali konstruksiyalar uchun." },
+      {
+        product_name: "Sement M400 (50 kg)",
+        price: "78000",
+        product_type: "Sement",
+        description: "Yuqori sifatli M400 sement, qurilish va ta'mirlash uchun.",
+        images: [
+          'https://picsum.photos/seed/cement-bag1/600/400',
+          'https://picsum.photos/seed/cement-bag2/600/400',
+        ],
+      },
+      {
+        product_name: "G'isht qizil (dona)",
+        price: "2000",
+        product_type: "G'isht",
+        description: "Qizil g'isht, standart o'lcham 250x120x65 mm, pishirilgan.",
+        images: [
+          'https://picsum.photos/seed/red-brick1/600/400',
+          'https://picsum.photos/seed/red-brick2/600/400',
+          'https://picsum.photos/seed/red-brick3/600/400',
+        ],
+      },
+      {
+        product_name: "Qum quruq (1 tonna)",
+        price: "720000",
+        product_type: "Qum",
+        description: "Toza daryo qumi, qurilish ishlariga mos, elangan.",
+        images: ['https://picsum.photos/seed/sand-pile1/600/400'],
+      },
+      {
+        product_name: "Armatür A400 12mm (1 metr)",
+        price: "17500",
+        product_type: "Temir",
+        description: "A400 markali armatür, poydevor va beton uchun.",
+        images: [
+          'https://picsum.photos/seed/rebar1/600/400',
+          'https://picsum.photos/seed/rebar2/600/400',
+        ],
+      },
+      {
+        product_name: "Shag'al 20mm (1 tonna)",
+        price: "520000",
+        product_type: "Shag'al",
+        description: "Beton aralashmasiga mos 20mm shag'al.",
+        images: ['https://picsum.photos/seed/gravel1/600/400'],
+      },
+      {
+        product_name: "Sement M500 (50 kg)",
+        price: "98000",
+        product_type: "Sement",
+        description: "Mustahkam M500 sement, yuqori yuklamali konstruksiyalar uchun.",
+        images: [
+          'https://picsum.photos/seed/cement-m500-1/600/400',
+          'https://picsum.photos/seed/cement-m500-2/600/400',
+        ],
+      },
     ],
   },
   {
@@ -266,12 +290,62 @@ const shops = [
     description: "Italiya, Ispaniya va mahalliy kafel kolleksiyalari. 500+ model.",
     product_types: "Kafel, mozaika, granit plitka",
     products: [
-      { product_name: "Polsha kafel 60x60 (kv.m)", price: "85 000 so'm", product_type: "Kafel", description: "Polsha ishlab chiqaruvchisi, pol uchun, yiltiraydi." },
-      { product_name: "Devor kafel 30x60 (kv.m)", price: "65 000 so'm", product_type: "Kafel", description: "Hammom va oshxona devorlariga mos oq kafel." },
-      { product_name: "Gresit plitka 80x80 (kv.m)", price: "120 000 so'm", product_type: "Gresit", description: "Premium gresit, suv o'tkazmaydi, chidamli." },
-      { product_name: "Mozaika panel (30x30)", price: "95 000 so'm", product_type: "Mozaika", description: "Hammom va basseyn uchun shisha mozaika." },
-      { product_name: "Kafel yelimi (25 kg)", price: "38 000 so'm", product_type: "Yopishtirgich", description: "Professional kafel yelimi, tez qotadi." },
-      { product_name: "Fuga (2 kg)", price: "22 000 so'm", product_type: "Fuga", description: "Kafel chok to'ldiruvchi fuga, 20 ta rang." },
+      {
+        product_name: "Pol kafel 60x60 (kv.m)",
+        price: "165000",
+        product_type: "Plitka",
+        description: "Polsha ishlab chiqaruvchisi, pol uchun, yiltiraydi.",
+        images: [
+          'https://picsum.photos/seed/floor-tile1/600/400',
+          'https://picsum.photos/seed/floor-tile2/600/400',
+          'https://picsum.photos/seed/floor-tile3/600/400',
+        ],
+      },
+      {
+        product_name: "Devor kafel 30x60 (kv.m)",
+        price: "115000",
+        product_type: "Plitka",
+        description: "Hammom va oshxona devorlariga mos oq kafel.",
+        images: [
+          'https://picsum.photos/seed/wall-tile1/600/400',
+          'https://picsum.photos/seed/wall-tile2/600/400',
+        ],
+      },
+      {
+        product_name: "Gresit plitka 80x80 (kv.m)",
+        price: "265000",
+        product_type: "Plitka",
+        description: "Premium gresit, suv o'tkazmaydi, chidamli, yorqin.",
+        images: [
+          'https://picsum.photos/seed/gresit1/600/400',
+          'https://picsum.photos/seed/gresit2/600/400',
+          'https://picsum.photos/seed/gresit3/600/400',
+        ],
+      },
+      {
+        product_name: "Shisha mozaika panel 30x30",
+        price: "195000",
+        product_type: "Plitka",
+        description: "Hammom va basseyn uchun shisha mozaika.",
+        images: [
+          'https://picsum.photos/seed/mosaic1/600/400',
+          'https://picsum.photos/seed/mosaic2/600/400',
+        ],
+      },
+      {
+        product_name: "Kafel yelimi (25 kg)",
+        price: "68000",
+        product_type: "Boshqa",
+        description: "Professional kafel yelimi, tez qotadi, suv o'tkazmaydi.",
+        images: ['https://picsum.photos/seed/tile-glue1/600/400'],
+      },
+      {
+        product_name: "Kafel fuga (2 kg)",
+        price: "38000",
+        product_type: "Boshqa",
+        description: "Kafel chok to'ldiruvchi fuga, 20 ta rang mavjud.",
+        images: ['https://picsum.photos/seed/grout1/600/400'],
+      },
     ],
   },
   {
@@ -283,12 +357,65 @@ const shops = [
     description: "Santexnika jihozlari, vannaxona uskunalari, quvurlar.",
     product_types: "Quvur, kran, vanna, unitaz",
     products: [
-      { product_name: "Plastik quvur 20mm (metr)", price: "8 500 so'm", product_type: "Quvur", description: "PPR plastik quvur, issiq va sovuq suv uchun." },
-      { product_name: "Aralashtirgich kran (bronza)", price: "185 000 so'm", product_type: "Armatura", description: "Yevropа sifatli bronza kran, umrbod kafolat." },
-      { product_name: "Akril vanna 170x70", price: "1 250 000 so'm", product_type: "Vanna", description: "Oq akril vanna, standart o'lcham, chidamli qoplama." },
-      { product_name: "Unitaz + bachok to'plami", price: "650 000 so'm", product_type: "Unitaz", description: "Kompakt unitaz, suv tejovchi, oson o'rnatiladi." },
-      { product_name: "Dush kabinasi 90x90", price: "2 800 000 so'm", product_type: "Dush", description: "To'liq dush kabinasi, shisha va profil bilan." },
-      { product_name: "Metall-plastik quvur 16mm (metr)", price: "12 000 so'm", product_type: "Quvur", description: "Ichki quvur tarmog'i uchun metall-plastik quvur." },
+      {
+        product_name: "PPR plastik quvur 20mm (metr)",
+        price: "15000",
+        product_type: "Boshqa",
+        description: "PPR plastik quvur, issiq va sovuq suv uchun, 20 yil kafolat.",
+        images: [
+          'https://picsum.photos/seed/pipe1/600/400',
+          'https://picsum.photos/seed/pipe2/600/400',
+        ],
+      },
+      {
+        product_name: "Bronza aralashtirgich kran",
+        price: "480000",
+        product_type: "Boshqa",
+        description: "Yevropa sifatli bronza kran, vannaxona uchun.",
+        images: [
+          'https://picsum.photos/seed/faucet1/600/400',
+          'https://picsum.photos/seed/faucet2/600/400',
+          'https://picsum.photos/seed/faucet3/600/400',
+        ],
+      },
+      {
+        product_name: "Akril vanna 170x70",
+        price: "2850000",
+        product_type: "Boshqa",
+        description: "Oq akril vanna, standart o'lcham, chidamli qoplama.",
+        images: [
+          'https://picsum.photos/seed/bathtub1/600/400',
+          'https://picsum.photos/seed/bathtub2/600/400',
+        ],
+      },
+      {
+        product_name: "Unitaz + bachok to'plami",
+        price: "1150000",
+        product_type: "Boshqa",
+        description: "Kompakt unitaz, suv tejovchi sistema, oson o'rnatiladi.",
+        images: [
+          'https://picsum.photos/seed/toilet1/600/400',
+          'https://picsum.photos/seed/toilet2/600/400',
+        ],
+      },
+      {
+        product_name: "Dush kabinasi 90x90",
+        price: "5200000",
+        product_type: "Boshqa",
+        description: "To'liq dush kabinasi, shisha va profil bilan, kafolat 2 yil.",
+        images: [
+          'https://picsum.photos/seed/shower1/600/400',
+          'https://picsum.photos/seed/shower2/600/400',
+          'https://picsum.photos/seed/shower3/600/400',
+        ],
+      },
+      {
+        product_name: "Metall-plastik quvur 16mm (metr)",
+        price: "22000",
+        product_type: "Boshqa",
+        description: "Ichki quvur tarmog'i uchun metall-plastik quvur.",
+        images: ['https://picsum.photos/seed/mplastic-pipe1/600/400'],
+      },
     ],
   },
   {
@@ -300,12 +427,61 @@ const shops = [
     description: "Elektr materiallari, kabel, rozetkalar, elektr asboblari.",
     product_types: "Kabel, rozetka, avtomat, LED",
     products: [
-      { product_name: "VVG kabel 3x2.5 (metr)", price: "9 500 so'm", product_type: "Kabel", description: "Mis o'tkazgichli VVG kabel, ichki elektr tarmog'i uchun." },
-      { product_name: "Rozetka+vyklyuchatel' to'plami", price: "35 000 so'm", product_type: "Elektr armatüra", description: "Ikkita rozetka va bitta kallit to'plami, Yevropa standarti." },
-      { product_name: "Avtomat 25A (ABB)", price: "65 000 so'm", product_type: "Avtomat", description: "Original ABB avtomati, ishonchli himoya." },
-      { product_name: "LED lenta (5 metr)", price: "85 000 so'm", product_type: "Yoritish", description: "12V LED lenta, 5050 chip, 60 diod/metr." },
-      { product_name: "Zaryadka paneli (10W)", price: "120 000 so'm", product_type: "Quvvat", description: "Quyosh energiyali zaryadka paneli, portativ." },
-      { product_name: "Elektr shield bo'sh (9 oy'a)", price: "48 000 so'm", product_type: "Quti", description: "Avtomatlar uchun plastik shield, 9 o'rin." },
+      {
+        product_name: "VVG kabel 3x2.5 (metr)",
+        price: "16500",
+        product_type: "Boshqa",
+        description: "Mis o'tkazgichli VVG kabel, ichki elektr tarmog'i uchun.",
+        images: [
+          'https://picsum.photos/seed/cable1/600/400',
+          'https://picsum.photos/seed/cable2/600/400',
+        ],
+      },
+      {
+        product_name: "Rozetka + kallit to'plami",
+        price: "62000",
+        product_type: "Boshqa",
+        description: "Ikkita rozetka va bitta kallit to'plami, Yevropa standarti.",
+        images: [
+          'https://picsum.photos/seed/socket1/600/400',
+          'https://picsum.photos/seed/socket2/600/400',
+        ],
+      },
+      {
+        product_name: "Avtomat 25A (ABB)",
+        price: "135000",
+        product_type: "Boshqa",
+        description: "Original ABB avtomati, ishonchli himoya, 10 yil kafolat.",
+        images: [
+          'https://picsum.photos/seed/breaker1/600/400',
+          'https://picsum.photos/seed/breaker2/600/400',
+          'https://picsum.photos/seed/breaker3/600/400',
+        ],
+      },
+      {
+        product_name: "LED lenta 5050 (5 metr)",
+        price: "165000",
+        product_type: "Boshqa",
+        description: "12V LED lenta, 5050 chip, 60 diod/metr, yorqin va tejamkor.",
+        images: [
+          'https://picsum.photos/seed/led-strip1/600/400',
+          'https://picsum.photos/seed/led-strip2/600/400',
+        ],
+      },
+      {
+        product_name: "Elektr shield (9 o'rin)",
+        price: "98000",
+        product_type: "Boshqa",
+        description: "Avtomatlar uchun plastik shield, 9 o'rin, IP40.",
+        images: ['https://picsum.photos/seed/shield1/600/400'],
+      },
+      {
+        product_name: "Kabel kanal 20x10 (2 metr)",
+        price: "28000",
+        product_type: "Boshqa",
+        description: "Plastik kabel kanal, devorga mahkamlanadigan, oq rang.",
+        images: ['https://picsum.photos/seed/cableduct1/600/400'],
+      },
     ],
   },
   {
@@ -317,12 +493,61 @@ const shops = [
     description: "Parket, laminat, MDF, taxta va yog'och materiallari.",
     product_types: "Laminat, parket, MDF, taxta",
     products: [
-      { product_name: "Laminat 8mm AC4 (kv.m)", price: "75 000 so'm", product_type: "Laminat", description: "Germaniya laminati, suv bardosh, AC4 darajasi." },
-      { product_name: "Parket taxtasi (kv.m)", price: "185 000 so'm", product_type: "Parket", description: "Eman parket, 18mm qalinlik, yaltiroq lakli." },
-      { product_name: "MDF 16mm (1.22x2.44m)", price: "310 000 so'm", product_type: "MDF", description: "Mebel va dekor uchun sifatli MDF plita." },
-      { product_name: "Plintus plastik (2.5m)", price: "18 000 so'm", product_type: "Plintus", description: "Laminat uchun plastik plintus, 20 ta rang." },
-      { product_name: "Substrat 3mm (kv.m)", price: "12 000 so'm", product_type: "Substrat", description: "Laminat ostiga yotqiziladigan tovush izolyatsiya substrat." },
-      { product_name: "Yog'och taxtasi (1m)", price: "22 000 so'm", product_type: "Taxta", description: "Quritilgan yog'och taxta, 50x100mm." },
+      {
+        product_name: "Laminat 8mm AC4 (kv.m)",
+        price: "145000",
+        product_type: "Yog'och",
+        description: "Germaniya laminati, suv bardosh, AC4 darajasi, kafolat 15 yil.",
+        images: [
+          'https://picsum.photos/seed/laminate1/600/400',
+          'https://picsum.photos/seed/laminate2/600/400',
+          'https://picsum.photos/seed/laminate3/600/400',
+        ],
+      },
+      {
+        product_name: "Eman parket (kv.m)",
+        price: "385000",
+        product_type: "Yog'och",
+        description: "Eman parket, 18mm qalinlik, yaltiroq lakli, premium sifat.",
+        images: [
+          'https://picsum.photos/seed/parquet1/600/400',
+          'https://picsum.photos/seed/parquet2/600/400',
+        ],
+      },
+      {
+        product_name: "MDF 16mm (1.22x2.44m)",
+        price: "560000",
+        product_type: "Yog'och",
+        description: "Mebel va dekor uchun sifatli MDF plita.",
+        images: [
+          'https://picsum.photos/seed/mdf1/600/400',
+          'https://picsum.photos/seed/mdf2/600/400',
+        ],
+      },
+      {
+        product_name: "Plastik plintus (2.5m)",
+        price: "32000",
+        product_type: "Boshqa",
+        description: "Laminat uchun plastik plintus, 20 ta rang mavjud.",
+        images: ['https://picsum.photos/seed/baseboard1/600/400'],
+      },
+      {
+        product_name: "Tovush izolyatsiya substrat 3mm (kv.m)",
+        price: "25000",
+        product_type: "Boshqa",
+        description: "Laminat ostiga yotqiziladigan substrat, tovushni kamaytiradi.",
+        images: ['https://picsum.photos/seed/underlay1/600/400'],
+      },
+      {
+        product_name: "Quruq yog'och taxta 50x100mm (metr)",
+        price: "48000",
+        product_type: "Yog'och",
+        description: "Quritilgan yog'och taxta, qurilish va mebel uchun.",
+        images: [
+          'https://picsum.photos/seed/lumber1/600/400',
+          'https://picsum.photos/seed/lumber2/600/400',
+        ],
+      },
     ],
   },
 ];
@@ -330,7 +555,6 @@ const shops = [
 async function seed() {
   console.log('🌱 Demo ma\'lumotlarini kiritish boshlandi...\n');
 
-  // Check for existing demo data
   const existing = await prisma.user.findFirst({ where: { additional_info: DEMO_TAG } });
   if (existing) {
     console.log('⚠️  Demo ma\'lumotlar allaqachon mavjud. Avval clearDemoData.js ni ishga tushiring.');
@@ -338,7 +562,6 @@ async function seed() {
     return;
   }
 
-  // Create a single demo reviewer (customer) to attach ratings to
   const reviewer = await prisma.user.create({
     data: {
       name: 'Demo Mijoz',
@@ -352,7 +575,6 @@ async function seed() {
     },
   });
 
-  // Create workers
   for (const w of workers) {
     const user = await prisma.user.create({
       data: {
@@ -387,42 +609,22 @@ async function seed() {
       },
     });
 
-    // Portfolio images
     for (const img of w.portfolio) {
-      await prisma.workerPortfolio.create({
-        data: { worker_id: worker.id, image_url: img },
-      });
+      await prisma.workerPortfolio.create({ data: { worker_id: worker.id, image_url: img } });
     }
-
-    // Calendar entries
     for (const cal of w.calendar) {
-      await prisma.workerAvailabilityCalendar.create({
-        data: { worker_id: worker.id, date: cal.date, status: cal.status },
-      });
+      await prisma.workerAvailabilityCalendar.create({ data: { worker_id: worker.id, date: cal.date, status: cal.status } });
     }
-
-    // Ratings (use reviewer, skip if no ratings)
     for (const r of w.ratings) {
       try {
-        await prisma.rating.create({
-          data: {
-            worker_id: worker.id,
-            customer_id: reviewer.id,
-            stars: r.stars,
-            review: r.review,
-          },
-        });
-        // Only one rating per unique (worker_id, customer_id) pair allowed — break after first
+        await prisma.rating.create({ data: { worker_id: worker.id, customer_id: reviewer.id, stars: r.stars, review: r.review } });
         break;
-      } catch (e) {
-        // unique constraint: skip
-      }
+      } catch (e) {}
     }
 
     console.log(`✅ Usta yaratildi: ${w.name} (${w.profession})`);
   }
 
-  // Create shops + products
   for (const s of shops) {
     const user = await prisma.user.create({
       data: {
@@ -452,7 +654,7 @@ async function seed() {
     });
 
     for (const p of s.products) {
-      await prisma.product.create({
+      const product = await prisma.product.create({
         data: {
           shop_id: shop.id,
           product_name: p.product_name,
@@ -462,18 +664,19 @@ async function seed() {
           seller_phone: s.phone,
         },
       });
+
+      for (let i = 0; i < p.images.length; i++) {
+        await prisma.productImage.create({ data: { product_id: product.id, image_url: p.images[i], sort_order: i } });
+      }
     }
 
     console.log(`🏪 Do'kon yaratildi: ${s.shop_name} (${s.products.length} mahsulot)`);
   }
 
-  const workerCount = workers.length;
-  const shopCount = shops.length;
   const productCount = shops.reduce((sum, s) => sum + s.products.length, 0);
-
   console.log(`\n🎉 Demo ma'lumotlar muvaffaqiyatli kiritildi!`);
-  console.log(`   👷 Ustalar: ${workerCount}`);
-  console.log(`   🏪 Do'konlar: ${shopCount}`);
+  console.log(`   👷 Ustalar: ${workers.length}`);
+  console.log(`   🏪 Do'konlar: ${shops.length}`);
   console.log(`   📦 Mahsulotlar: ${productCount}`);
   console.log(`   🔑 Demo parol: Demo1234`);
   console.log(`\n   O'chirish uchun: npm run db:clear-demo`);
