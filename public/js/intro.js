@@ -1,4 +1,4 @@
-﻿// Add missing lang keys
+// Add missing lang keys
 if (typeof LANG !== 'undefined') {
   LANG.uz.customerDesc = "Usta yollash, xizmatlarga buyurtma berish va materiallar ko'rish";
   LANG.uz.workerDesc = "O'z xizmatlaringizni taklif qiling va yangi mijozlar toping";

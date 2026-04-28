@@ -1,4 +1,4 @@
-﻿const LANG = {
+const LANG = {
   uz: {
     appName: 'Qurilish UZ',
     tagline: "O'zbekistondagi qurilish xizmatlari platformasi",
