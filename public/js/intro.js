@@ -1,4 +1,4 @@
-// Add missing lang keys
+﻿// Add missing lang keys
 if (typeof LANG !== 'undefined') {
   LANG.uz.customerDesc = "Usta yollash, xizmatlarga buyurtma berish va materiallar ko'rish";
   LANG.uz.workerDesc = "O'z xizmatlaringizni taklif qiling va yangi mijozlar toping";
@@ -22,7 +22,7 @@ fetch('/api/auth/status')
 function getDashUrl(type) {
   if (type === 'worker') return '/dashboard/worker';
   if (type === 'shop')   return '/dashboard/shop';
-  if (type === 'admin')  return '/admin-ustatop-secure-2024';
+  if (type === 'admin')  return '/admin-qurilishuz-secure-2024';
   return '/dashboard/customer';
 }
 
@@ -243,7 +243,7 @@ function submitAdmin() {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ password: pwd })
   }).then(function(r) { return r.json(); }).then(function(d) {
-    if (d.success) { window.location.href = '/admin-ustatop-secure-2024'; }
+    if (d.success) { window.location.href = '/admin-qurilishuz-secure-2024'; }
     else { errEl.textContent = t(d.error) || d.error; }
   }).catch(function() { errEl.textContent = t('networkError'); });
 }

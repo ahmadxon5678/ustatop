@@ -1,7 +1,7 @@
-{
-  "name": "ustatop",
+﻿{
+  "name": "qurilishuz",
   "version": "1.0.0",
-  "description": "Usta TOP - Uzbekistan construction workers and materials platform",
+  "description": "Qurilish UZ - Uzbekistan construction workers and materials platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",

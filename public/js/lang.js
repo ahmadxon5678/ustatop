@@ -1,6 +1,6 @@
-const LANG = {
+﻿const LANG = {
   uz: {
-    appName: 'UstaTOP',
+    appName: 'Qurilish UZ',
     tagline: "O'zbekistondagi qurilish xizmatlari platformasi",
     whoAreYou: 'Siz kimsiz?',
     customer: 'Mijoz', worker: 'Usta', shop: "Do'kon",
@@ -198,7 +198,7 @@ const LANG = {
     wrongPassword: "Parol noto'g'ri."
   },
   ru: {
-    appName: 'UstaTOP',
+    appName: 'Qurilish UZ',
     tagline: 'Платформа строительных услуг в Узбекистане',
     whoAreYou: 'Кто вы?',
     customer: 'Клиент', worker: 'Мастер', shop: 'Магазин',
