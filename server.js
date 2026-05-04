@@ -14,7 +14,7 @@ app.use(session({
     tableName: 'user_sessions',
     createTableIfMissing: true
   }),
-  secret: process.env.SESSION_SECRET || 'qurilishuz-secret-2024',
+  secret: process.env.SESSION_SECRET || 'ustabek-secret-2024',
   resave: false,
   saveUninitialized: false,
   cookie: { maxAge: 24 * 60 * 60 * 1000 * 7 } // 7 days
@@ -82,7 +82,7 @@ app.get('/workers', (req, res) => res.sendFile(path.join(__dirname, 'views', 'wo
 app.get('/workers/:id', (req, res) => res.sendFile(path.join(__dirname, 'views', 'worker-profile.html')));
 app.get('/marketplace', (req, res) => res.sendFile(path.join(__dirname, 'views', 'marketplace.html')));
 
-app.get('/admin-qurilishuz-secure-2024', requireAdmin, (req, res) =>
+app.get('/admin-ustabek-secure-2024', requireAdmin, (req, res) =>
   res.sendFile(path.join(__dirname, 'views', 'admin.html')));
 
 // ── Job expiry check ──
@@ -113,5 +113,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Qurilish UZ server running: http://localhost:${PORT}`);
+  console.log(`UstaBEK server running: http://localhost:${PORT}`);
 });
