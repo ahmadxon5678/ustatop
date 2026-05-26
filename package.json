@@ -4,7 +4,8 @@
   "description": "UstaMart - Uzbekistan construction workers and materials platform",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node scripts/railway-start.js",
+    "start:local": "node server.js",
     "db:push": "prisma db push",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",

@@ -2,4 +2,4 @@
 buildCommand = "npm install && npx prisma generate"
 
 [deploy]
-startCommand = "npx prisma db push && node server.js"
+startCommand = "npm start"
