@@ -1,10 +1,11 @@
 {
-  "name": "ustabek",
+  "name": "ustamart",
   "version": "1.0.0",
-  "description": "UstaBEK - Uzbekistan construction workers and materials platform",
+  "description": "UstaMart - Uzbekistan construction workers and materials platform",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
+    "db:push": "prisma db push",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",
     "db:generate": "prisma generate",

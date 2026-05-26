@@ -32,19 +32,21 @@ router.get('/', async (req, res) => {
   try {
     const { region, profession, verified } = req.query;
 
-    let whereClause = Prisma.sql`w.approved = true`;
+    let whereClause = Prisma.sql`w.approved = 1`;
     if (region) whereClause = Prisma.sql`${whereClause} AND w.region = ${region}`;
     if (profession) whereClause = Prisma.sql`${whereClause} AND w.profession = ${profession}`;
-    if (verified === '1') whereClause = Prisma.sql`${whereClause} AND w.is_verified = true`;
+    if (verified === '1') whereClause = Prisma.sql`${whereClause} AND w.is_verified = 1`;
 
     const workers = await prisma.$queryRaw`
       SELECT w.*,
-        (SELECT COUNT(*)::int FROM worker_views wv
+        (SELECT COUNT(*) FROM worker_views wv
          WHERE wv.worker_id = w.id
-         AND wv.viewed_at > NOW() - INTERVAL '7 days') as weekly_views,
-        (SELECT COUNT(*)::int FROM ratings r WHERE r.worker_id = w.id) as review_count,
-        (SELECT COUNT(*)::int FROM job_responses jr WHERE jr.worker_id = w.id) as total_responses,
-        (SELECT AVG(EXTRACT(EPOCH FROM (jr.created_at - jreq.created_at)) / 3600)
+         AND substr(wv.viewed_at,1,19) > strftime('%Y-%m-%dT%H:%M:%S','now','-7 days')) as weekly_views,
+        (SELECT COUNT(*) FROM ratings r WHERE r.worker_id = w.id) as review_count,
+        (SELECT COUNT(*) FROM job_responses jr WHERE jr.worker_id = w.id) as total_responses,
+        (SELECT AVG(
+           (CAST(strftime('%s',substr(jr.created_at,1,19)) AS REAL) -
+            CAST(strftime('%s',substr(jreq.created_at,1,19)) AS REAL)) / 3600.0)
          FROM job_responses jr JOIN job_requests jreq ON jreq.id = jr.job_request_id
          WHERE jr.worker_id = w.id) as avg_response_hours
       FROM workers w WHERE ${whereClause}
@@ -56,7 +58,13 @@ router.get('/', async (req, res) => {
         where: { worker_id: w.id },
         select: { image_url: true }
       });
-      return { ...w, thumbnail: thumb ? thumb.image_url : null };
+      return {
+        ...w,
+        weekly_views: Number(w.weekly_views || 0),
+        review_count: Number(w.review_count || 0),
+        total_responses: Number(w.total_responses || 0),
+        thumbnail: thumb ? thumb.image_url : null
+      };
     }));
 
     res.json({ workers: result });
@@ -110,18 +118,26 @@ router.get('/:id', async (req, res) => {
     const workerId = parseInt(req.params.id);
     const workers = await prisma.$queryRaw`
       SELECT w.*,
-        (SELECT COUNT(*)::int FROM worker_views wv
+        (SELECT COUNT(*) FROM worker_views wv
          WHERE wv.worker_id = w.id
-         AND wv.viewed_at > NOW() - INTERVAL '7 days') as weekly_views,
-        (SELECT COUNT(*)::int FROM ratings r WHERE r.worker_id = w.id) as review_count,
-        (SELECT COUNT(*)::int FROM job_responses jr WHERE jr.worker_id = w.id) as total_responses,
-        (SELECT AVG(EXTRACT(EPOCH FROM (jr.created_at - jreq.created_at)) / 3600)
+         AND substr(wv.viewed_at,1,19) > strftime('%Y-%m-%dT%H:%M:%S','now','-7 days')) as weekly_views,
+        (SELECT COUNT(*) FROM ratings r WHERE r.worker_id = w.id) as review_count,
+        (SELECT COUNT(*) FROM job_responses jr WHERE jr.worker_id = w.id) as total_responses,
+        (SELECT AVG(
+           (CAST(strftime('%s',substr(jr.created_at,1,19)) AS REAL) -
+            CAST(strftime('%s',substr(jreq.created_at,1,19)) AS REAL)) / 3600.0)
          FROM job_responses jr JOIN job_requests jreq ON jreq.id = jr.job_request_id
          WHERE jr.worker_id = w.id) as avg_response_hours
-      FROM workers w WHERE w.id = ${workerId} AND w.approved = true
+      FROM workers w WHERE w.id = ${workerId} AND w.approved = 1
     `;
-    const worker = workers[0];
-    if (!worker) return res.status(404).json({ error: 'notFound' });
+    const workerRaw = workers[0];
+    if (!workerRaw) return res.status(404).json({ error: 'notFound' });
+    const worker = {
+      ...workerRaw,
+      weekly_views: Number(workerRaw.weekly_views || 0),
+      review_count: Number(workerRaw.review_count || 0),
+      total_responses: Number(workerRaw.total_responses || 0),
+    };
 
     const portfolio = await prisma.workerPortfolio.findMany({
       where: { worker_id: worker.id }, orderBy: { id: 'desc' }
@@ -142,7 +158,7 @@ router.get('/:id', async (req, res) => {
         const alreadyViewed = await prisma.$queryRaw`
           SELECT id FROM worker_views
           WHERE worker_id = ${workerId} AND user_id = ${req.session.userId}
-          AND viewed_at > NOW() - INTERVAL '7 days'
+          AND substr(viewed_at,1,19) > strftime('%Y-%m-%dT%H:%M:%S','now','-7 days')
           LIMIT 1
         `;
         if (!alreadyViewed.length) {

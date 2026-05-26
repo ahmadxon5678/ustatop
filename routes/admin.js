@@ -32,25 +32,25 @@ router.get('/stats', async (req, res) => {
     const [registrationsPerDay, professionBreakdown, regionBreakdown, jobRequestsPerDay] =
       await Promise.all([
         prisma.$queryRaw`
-          SELECT DATE(created_at)::text as date, COUNT(*)::int as count
+          SELECT substr(created_at,1,10) as date, COUNT(*) as count
           FROM users
-          WHERE created_at >= NOW() - INTERVAL '30 days'
-          GROUP BY DATE(created_at) ORDER BY date ASC
+          WHERE substr(created_at,1,19) >= strftime('%Y-%m-%dT%H:%M:%S','now','-30 days')
+          GROUP BY substr(created_at,1,10) ORDER BY date ASC
         `,
         prisma.$queryRaw`
-          SELECT w.profession, COUNT(*)::int as count
+          SELECT w.profession, COUNT(*) as count
           FROM workers w INNER JOIN users u ON w.user_id = u.id
           GROUP BY w.profession ORDER BY count DESC
         `,
         prisma.$queryRaw`
-          SELECT region, COUNT(*)::int as count FROM users
+          SELECT region, COUNT(*) as count FROM users
           WHERE region IS NOT NULL AND region != ''
           GROUP BY region ORDER BY count DESC
         `,
         prisma.$queryRaw`
-          SELECT DATE(created_at)::text as date, COUNT(*)::int as count FROM job_requests
-          WHERE status = 'active' AND created_at >= NOW() - INTERVAL '30 days'
-          GROUP BY DATE(created_at) ORDER BY date ASC
+          SELECT substr(created_at,1,10) as date, COUNT(*) as count FROM job_requests
+          WHERE status = 'active' AND substr(created_at,1,19) >= strftime('%Y-%m-%dT%H:%M:%S','now','-30 days')
+          GROUP BY substr(created_at,1,10) ORDER BY date ASC
         `
       ]);
 

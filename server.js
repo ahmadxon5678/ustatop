@@ -6,18 +6,12 @@ const prisma = require('./config/database');
 
 const app = express();
 
-// ── Session store (PostgreSQL) ──
-const pgSession = require('connect-pg-simple')(session);
+// ── Session store (in-memory for localhost) ──
 app.use(session({
-  store: new pgSession({
-    conString: process.env.DATABASE_URL,
-    tableName: 'user_sessions',
-    createTableIfMissing: true
-  }),
-  secret: process.env.SESSION_SECRET || 'ustabek-secret-2024',
+  secret: process.env.SESSION_SECRET || 'ustamart-secret-2024',
   resave: false,
   saveUninitialized: false,
-  cookie: { maxAge: 24 * 60 * 60 * 1000 * 7 } // 7 days
+  cookie: { maxAge: 24 * 60 * 60 * 1000 * 7 }
 }));
 
 // ── Middleware ──
@@ -82,7 +76,7 @@ app.get('/workers', (req, res) => res.sendFile(path.join(__dirname, 'views', 'wo
 app.get('/workers/:id', (req, res) => res.sendFile(path.join(__dirname, 'views', 'worker-profile.html')));
 app.get('/marketplace', (req, res) => res.sendFile(path.join(__dirname, 'views', 'marketplace.html')));
 
-app.get('/admin-ustabek-secure-2024', requireAdmin, (req, res) =>
+app.get('/admin-ustamart-secure-2024', requireAdmin, (req, res) =>
   res.sendFile(path.join(__dirname, 'views', 'admin.html')));
 
 // ── Job expiry check ──
@@ -113,5 +107,5 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`UstaBEK server running: http://localhost:${PORT}`);
+  console.log(`UstaMart server running: http://localhost:${PORT}`);
 });

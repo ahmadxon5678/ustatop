@@ -13,7 +13,7 @@ router.get('/', requireApi, async (req, res) => {
     if (mine === '1') {
       requests = await prisma.$queryRaw`
         SELECT jr.*, u.name as poster_name,
-          (SELECT COUNT(*)::int FROM job_responses jresp WHERE jresp.job_request_id = jr.id) as response_count
+          (SELECT COUNT(*) FROM job_responses jresp WHERE jresp.job_request_id = jr.id) as response_count
         FROM job_requests jr JOIN users u ON u.id = jr.user_id
         WHERE jr.user_id = ${req.session.userId} AND jr.status IN ('active','completed')
         ORDER BY jr.created_at DESC
@@ -26,7 +26,7 @@ router.get('/', requireApi, async (req, res) => {
       requests = await prisma.$queryRaw`
         SELECT jr.*, u.name as poster_name,
           u.instagram_username as poster_instagram, u.telegram_username as poster_telegram,
-          (SELECT COUNT(*)::int FROM job_responses jresp WHERE jresp.job_request_id = jr.id) as response_count
+          (SELECT COUNT(*) FROM job_responses jresp WHERE jresp.job_request_id = jr.id) as response_count
         FROM job_requests jr JOIN users u ON u.id = jr.user_id
         WHERE ${whereClause}
         ORDER BY jr.is_urgent DESC, jr.created_at DESC
