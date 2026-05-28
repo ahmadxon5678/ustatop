@@ -35,10 +35,10 @@ var DEFAULT_THEME = { bg: 'linear-gradient(135deg,#F07020 0%,#FF8C00 100%)' };
 
 // ── Quick-filter pill definitions ──
 var PILLS = [
-  { id: 'all',     label: 'Barchasi',      icon: MSVG.grid,  type: '',       sort: '' },
-  { id: 'new',     label: 'Eng yangi',     icon: MSVG.zap,   type: '',       sort: '' },
-  { id: 'cheap',   label: 'Arzon narxlar', icon: MSVG.tag,   type: '',       sort: 'cheapest' },
-  { id: 'popular', label: 'Ommabop',       icon: MSVG.flame, type: '',       sort: 'expensive' },
+  { id: 'all',     labelKey: 'all',         icon: MSVG.grid,  type: '',       sort: '' },
+  { id: 'new',     labelKey: 'newest',      icon: MSVG.zap,   type: '',       sort: '' },
+  { id: 'cheap',   labelKey: 'cheapPrices', icon: MSVG.tag,   type: '',       sort: 'cheapest' },
+  { id: 'popular', labelKey: 'popular',     icon: MSVG.flame, type: '',       sort: 'expensive' },
   { id: 'sement',  label: 'Sement',        icon: '',         type: 'Sement', sort: '' },
   { id: 'gisht',   label: "G'isht",        icon: '',         type: "G'isht", sort: '' },
   { id: 'plitka',  label: 'Plitka',        icon: '',         type: 'Plitka', sort: '' },
@@ -62,6 +62,13 @@ Promise.all([
   console.error('Marketplace error:', err);
   document.getElementById('productsGrid').innerHTML =
     '<div class="empty-state" style="grid-column:1/-1"><p>' + t('errorGeneric') + '</p></div>';
+});
+
+document.addEventListener('languagechange', function() {
+  renderPills();
+  updateCount((_allProducts || []).length);
+  applyFilters();
+  setupNav(_session || {});
 });
 
 // ── Nav ──
@@ -124,7 +131,7 @@ function renderPills() {
     var isActive = pill.id === _activePill;
     return '<button class="mkt-pill' + (isActive ? ' active' : '') + '" onclick="clickPill(\'' + pill.id + '\')">' +
       (pill.icon ? '<span class="mkt-pill-icon">' + pill.icon + '</span>' : '') +
-      escHtml(pill.label) +
+      escHtml(pill.labelKey ? t(pill.labelKey) : pill.label) +
     '</button>';
   }).join('');
 }
@@ -183,7 +190,7 @@ function applyFilters() {
 
 function updateCount(n) {
   var el = document.getElementById('mktProductCount');
-  if (el) el.textContent = n + ' ta mahsulot mavjud';
+  if (el) el.textContent = t('productCount', { n: n });
 }
 
 // ── Image slideshow ──
@@ -288,7 +295,7 @@ function renderProducts(products) {
       contacts +=
         '<span class="mkt-contact-item" style="cursor:default;opacity:0.45">' +
           '<span class="mkt-contact-icon">' + MSVG.send + '</span>' +
-          '<span>mavjud emas</span>' +
+          '<span>' + t('unavailable') + '</span>' +
         '</span>';
     }
 
@@ -303,7 +310,7 @@ function renderProducts(products) {
       contacts +=
         '<span class="mkt-contact-item" style="cursor:default;opacity:0.45">' +
           '<span class="mkt-contact-icon">' + MSVG.instagram + '</span>' +
-          '<span>mavjud emas</span>' +
+          '<span>' + t('unavailable') + '</span>' +
         '</span>';
     }
 

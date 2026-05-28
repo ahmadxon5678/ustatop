@@ -175,7 +175,11 @@ function loadMyProducts() {
       prods.map(function(p) {
         var price = parseFloat(p.price);
         var priceStr = !isNaN(price) ? price.toLocaleString('uz-UZ') + " so'm" : escHtml(p.price);
+        var imgs = p.images || [];
         return '<div class="card" style="margin-bottom:12px;display:flex;justify-content:space-between;align-items:flex-start;gap:12px">' +
+          (imgs.length
+            ? '<img src="' + escHtml(imgs[0].image_url) + '" alt="' + escHtml(p.product_name) + '" style="width:68px;height:68px;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid #eee">'
+            : '') +
           '<div style="flex:1">' +
             '<div style="font-weight:700;margin-bottom:4px">' + escHtml(p.product_name) + '</div>' +
             '<div style="color:#F07020;font-weight:700;font-size:1rem">' + priceStr + '</div>' +
@@ -207,6 +211,8 @@ function openAddProduct() {
   document.getElementById('pPrice').value = '';
   document.getElementById('pType').value = '';
   document.getElementById('pDesc').value = '';
+  document.getElementById('pImages').value = '';
+  document.getElementById('productImagePreview').innerHTML = '';
   document.getElementById('productError').textContent = '';
   document.getElementById('productModal').classList.add('open');
 }
@@ -219,8 +225,34 @@ function editProduct(p) {
   document.getElementById('pPrice').value = p.price || '';
   document.getElementById('pType').value = p.product_type || '';
   document.getElementById('pDesc').value = p.description || '';
+  document.getElementById('pImages').value = '';
+  renderExistingProductImages(p.images || []);
   document.getElementById('productError').textContent = '';
   document.getElementById('productModal').classList.add('open');
+}
+
+function renderExistingProductImages(images) {
+  var preview = document.getElementById('productImagePreview');
+  preview.innerHTML = (images || []).map(function(img) {
+    return '<img src="' + escHtml(img.image_url) + '" alt="' + t('productImages') + '">';
+  }).join('');
+}
+
+function previewProductImages() {
+  var input = document.getElementById('pImages');
+  var errEl = document.getElementById('productError');
+  var preview = document.getElementById('productImagePreview');
+  var files = Array.prototype.slice.call(input.files || []);
+  errEl.textContent = '';
+  if (files.length > 3) {
+    input.value = '';
+    preview.innerHTML = '';
+    errEl.textContent = t('tooManyProductImages');
+    return;
+  }
+  preview.innerHTML = files.map(function(file) {
+    return '<img src="' + URL.createObjectURL(file) + '" alt="' + escHtml(file.name) + '">';
+  }).join('');
 }
 
 function saveProduct() {
@@ -228,15 +260,17 @@ function saveProduct() {
   var price = document.getElementById('pPrice').value.trim();
   var errEl = document.getElementById('productError');
   if (!name || !price) { errEl.textContent = t('nameAndPriceRequired'); return; }
-  var data = {
-    product_name: name,
-    price: price,
-    product_type: document.getElementById('pType').value,
-    description: document.getElementById('pDesc').value.trim()
-  };
+  var files = Array.prototype.slice.call(document.getElementById('pImages').files || []);
+  if (files.length > 3) { errEl.textContent = t('tooManyProductImages'); return; }
+  var data = new FormData();
+  data.append('product_name', name);
+  data.append('price', price);
+  data.append('product_type', document.getElementById('pType').value);
+  data.append('description', document.getElementById('pDesc').value.trim());
+  files.forEach(function(file) { data.append('images', file); });
   var url = _editProductId ? '/api/products/' + _editProductId : '/api/products';
   var method = _editProductId ? 'PUT' : 'POST';
-  fetch(url, { method: method, headers: {'Content-Type':'application/json'}, body: JSON.stringify(data) })
+  fetch(url, { method: method, body: data })
     .then(function(r) { return r.json(); }).then(function(d) {
       if (d.success) {
         closeModal('productModal');

@@ -129,6 +129,9 @@ a { text-decoration: none; color: inherit; }
 .form-input::placeholder { color: #aaa; }
 .form-select { padding: 11px 14px; border: 1.5px solid var(--border); border-radius: var(--btn-radius); font-size: 0.9rem; color: var(--text-primary); background: white; cursor: pointer; width: 100%; }
 .form-select:focus { outline: none; border-color: var(--gold); }
+.form-hint { font-size: 0.78rem; color: #888; margin: 6px 0 0; }
+.product-image-preview { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
+.product-image-preview img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; border: 1px solid #e5e7eb; background: #f8f9fa; }
 .form-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .form-error { color: var(--error); font-size: 0.8rem; margin-top: 4px; display: none; }
 .form-error.visible { display: block; }

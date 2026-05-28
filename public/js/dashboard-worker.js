@@ -23,6 +23,13 @@ fetch('/api/auth/status').then(function(r) { return r.json(); }).then(function(d
   loadNotifBadge();
 }).catch(function() { window.location.href = '/'; });
 
+document.addEventListener('languagechange', function() {
+  if (!_session) return;
+  if (_session.workerApproved) renderApprovedState();
+  else if (_session.workerRejected) renderRejectedState();
+  else renderPendingState();
+});
+
 // ── CARD CONFIG (SVG icons, no emojis) ──
 var DSVG = {
   wrench:   '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
@@ -43,17 +50,17 @@ var DSVG = {
 };
 
 var CARD_CONFIG = {
-  findWorker:   { svg: DSVG.wrench,   bg: 'linear-gradient(135deg,#F07020,#ea6000)', sh: 'rgba(240,112,32,0.32)', desc: "Malakali ustalarni toping va yollang" },
-  marketplace:  { svg: DSVG.bag,      bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', sh: 'rgba(59,130,246,0.32)', desc: "Qurilish materiallarini ko'ring" },
-  jobRequest:   { svg: DSVG.clip,     bg: 'linear-gradient(135deg,#22c55e,#16a34a)', sh: 'rgba(34,197,94,0.32)',  desc: "Yangi ish e'loni joylashtiring" },
-  myRequests:   { svg: DSVG.list,     bg: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', sh: 'rgba(139,92,246,0.32)', desc: "Joriy e'lonlaringizni ko'ring" },
-  savedWorkers: { svg: DSVG.bookmark, bg: 'linear-gradient(135deg,#ef4444,#b91c1c)', sh: 'rgba(239,68,68,0.32)',  desc: "Saqlangan ustalaringiz" },
-  myProfile:    { svg: DSVG.user,     bg: 'linear-gradient(135deg,#1a1a2e,#2d3748)', sh: 'rgba(26,26,46,0.32)',   desc: "Ma'lumotlaringizni tahrirlang" },
-  myResume:     { svg: DSVG.file,     bg: 'linear-gradient(135deg,#F07020,#ea6000)', sh: 'rgba(240,112,32,0.32)', desc: "Tajriba va ko'nikmalaringiz" },
-  portfolio:    { svg: DSVG.image,    bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', sh: 'rgba(59,130,246,0.32)', desc: "Ish namunalaringizni ko'rsating" },
-  availability: { svg: DSVG.calendar, bg: 'linear-gradient(135deg,#22c55e,#16a34a)', sh: 'rgba(34,197,94,0.32)',  desc: "Bandlik jadvalingizni boshqaring" },
-  myReviews:    { svg: DSVG.star,     bg: 'linear-gradient(135deg,#f59e0b,#d97706)', sh: 'rgba(245,158,11,0.32)', desc: "Mijozlar sharhlarini ko'ring" },
-  myShop:       { svg: DSVG.store,    bg: 'linear-gradient(135deg,#F07020,#ea6000)', sh: 'rgba(240,112,32,0.32)', desc: "Do'kon ma'lumotlari" }
+  findWorker:   { svg: DSVG.wrench,   bg: 'linear-gradient(135deg,#F07020,#ea6000)', sh: 'rgba(240,112,32,0.32)', descKey: 'descFindWorker' },
+  marketplace:  { svg: DSVG.bag,      bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', sh: 'rgba(59,130,246,0.32)', descKey: 'descMarketplace' },
+  jobRequest:   { svg: DSVG.clip,     bg: 'linear-gradient(135deg,#22c55e,#16a34a)', sh: 'rgba(34,197,94,0.32)',  descKey: 'descJobRequest' },
+  myRequests:   { svg: DSVG.list,     bg: 'linear-gradient(135deg,#8b5cf6,#6d28d9)', sh: 'rgba(139,92,246,0.32)', descKey: 'descMyRequests' },
+  savedWorkers: { svg: DSVG.bookmark, bg: 'linear-gradient(135deg,#ef4444,#b91c1c)', sh: 'rgba(239,68,68,0.32)',  descKey: 'descSavedWorkers' },
+  myProfile:    { svg: DSVG.user,     bg: 'linear-gradient(135deg,#1a1a2e,#2d3748)', sh: 'rgba(26,26,46,0.32)',   descKey: 'descMyProfile' },
+  myResume:     { svg: DSVG.file,     bg: 'linear-gradient(135deg,#F07020,#ea6000)', sh: 'rgba(240,112,32,0.32)', descKey: 'descMyResume' },
+  portfolio:    { svg: DSVG.image,    bg: 'linear-gradient(135deg,#3b82f6,#1d4ed8)', sh: 'rgba(59,130,246,0.32)', descKey: 'descPortfolio' },
+  availability: { svg: DSVG.calendar, bg: 'linear-gradient(135deg,#22c55e,#16a34a)', sh: 'rgba(34,197,94,0.32)',  descKey: 'descAvailability' },
+  myReviews:    { svg: DSVG.star,     bg: 'linear-gradient(135deg,#f59e0b,#d97706)', sh: 'rgba(245,158,11,0.32)', descKey: 'descMyReviews' },
+  myShop:       { svg: DSVG.store,    bg: 'linear-gradient(135deg,#F07020,#ea6000)', sh: 'rgba(240,112,32,0.32)', descKey: 'descMyShop' }
 };
 
 function _mkIconBlock(cfg) {
@@ -68,7 +75,7 @@ function mkCard(cardId, label, onclick) {
   return '<div class="dashboard-card" onclick="' + onclick + '">' +
     _mkIconBlock(cfg) +
     '<div class="dash-card-new-title">' + escHtml(label) + '</div>' +
-    (cfg.desc ? '<p class="card-description">' + escHtml(cfg.desc) + '</p>' : '') +
+    (cfg.descKey ? '<p class="card-description">' + escHtml(t(cfg.descKey)) + '</p>' : '') +
     _mkArrow() +
   '</div>';
 }
@@ -78,7 +85,7 @@ function mkWorkerFeatureCard(cardId, label, onclick) {
   return '<div class="worker-feature-card" onclick="' + onclick + '">' +
     _mkIconBlock(cfg) +
     '<div class="dash-card-new-title">' + escHtml(label) + '</div>' +
-    (cfg.desc ? '<p class="card-description">' + escHtml(cfg.desc) + '</p>' : '') +
+    (cfg.descKey ? '<p class="card-description">' + escHtml(t(cfg.descKey)) + '</p>' : '') +
     _mkArrow() +
   '</div>';
 }
@@ -88,7 +95,7 @@ function mkGeneralCard(cardId, label, onclick) {
   return '<div class="general-feature-card" onclick="' + onclick + '">' +
     _mkIconBlock(cfg) +
     '<div class="dash-card-new-title">' + escHtml(label) + '</div>' +
-    (cfg.desc ? '<p class="card-description">' + escHtml(cfg.desc) + '</p>' : '') +
+    (cfg.descKey ? '<p class="card-description">' + escHtml(t(cfg.descKey)) + '</p>' : '') +
     _mkArrow() +
   '</div>';
 }
@@ -152,13 +159,13 @@ function renderApprovedState() {
   loadWorkerStats();
   document.getElementById('dashCards').className = '';
   document.getElementById('dashCards').innerHTML =
-    mkSectionBlock(DSVG.zap, 'Usta imkoniyatlari', 'worker-title', null,
+    mkSectionBlock(DSVG.zap, t('workerFeatures'), 'worker-title', null,
       mkWorkerFeatureCard('myResume',     t('myResume'),     'openResumeModal()') +
       mkWorkerFeatureCard('portfolio',    t('portfolio'),    'openPortfolioModal()') +
       mkWorkerFeatureCard('availability', t('availability'), 'openAvailModal()') +
       mkWorkerFeatureCard('myReviews',    t('myReviews'),    "showSection('myReviews')")
     ) +
-    mkSectionBlock(DSVG.grid, 'Umumiy imkoniyatlar', 'general-title', null,
+    mkSectionBlock(DSVG.grid, t('generalFeatures'), 'general-title', null,
       mkGeneralCard('findWorker',   t('findWorker'),   "window.location.href='/workers'") +
       mkGeneralCard('marketplace',  t('marketplace'),  "window.location.href='/marketplace'") +
       mkGeneralCard('jobRequest',   t('jobRequest'),   'openJobModal()') +
@@ -401,11 +408,11 @@ function loadPortfolioContent() {
     '</div>';
     html += '<p style="font-size:0.82rem;color:#aaa;margin-top:10px;margin-bottom:0">' +
       '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-2px;margin-right:3px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>' +
-      'Bepul foydalanuvchilar faqat so\'nggi 5 ta rasmni ko\'rsata oladi.</p>';
+      t('portfolioLimitHint') + '</p>';
     if (imgs.length < 5) {
       html += '<div style="margin-top:12px"><label class="btn btn-outline" style="cursor:pointer;display:inline-flex;align-items:center;gap:7px">' +
         '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>' +
-        'Rasm qo\'shish' +
+        t('addImage') +
         '<input type="file" accept="image/*" style="display:none" onchange="uploadPortfolioImg(this)">' +
         '</label></div>';
     }
@@ -472,8 +479,13 @@ function renderCalSection() {
   var maxMonth = todayMonth + 5;
   var maxYear = todayYear;
   if (maxMonth > 11) { maxYear++; maxMonth -= 12; }
-  var monthNames = ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
-  var dayNames = ['Du','Se','Ch','Pa','Ju','Sh','Ya'];
+  var lang = getCurrentLang();
+  var monthNames = lang === 'ru'
+    ? ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь']
+    : ['Yanvar','Fevral','Mart','Aprel','May','Iyun','Iyul','Avgust','Sentabr','Oktabr','Noyabr','Dekabr'];
+  var dayNames = lang === 'ru'
+    ? ['Пн','Вт','Ср','Чт','Пт','Сб','Вс']
+    : ['Du','Se','Ch','Pa','Ju','Sh','Ya'];
   var isMin = (_calYear === todayYear && _calMonth === todayMonth);
   var isMax = (_calYear === maxYear && _calMonth === maxMonth);
   var nav =
@@ -503,6 +515,10 @@ function renderCalSection() {
       '<button class="btn btn-primary btn-full" onclick="saveCalendar()">Saqlash 💾</button>' +
       '<div id="calSaveMsg" style="text-align:center;font-size:0.85rem;color:#27ae60;margin-top:8px;display:none">Kalendar saqlandi ✓</div>' +
     '</div>';
+  var saveBtn = el.querySelector('button[onclick="saveCalendar()"]');
+  var saveMsg = el.querySelector('#calSaveMsg');
+  if (saveBtn) saveBtn.textContent = t('save');
+  if (saveMsg) saveMsg.textContent = t('calendarSaved');
 }
 
 function calNav(dir) {
@@ -616,12 +632,12 @@ function loadJobRequests() {
             '<span style="display:flex;align-items:center;gap:5px"><span style="color:#9ca3af">Telegram:</span>' +
               (jr.poster_telegram
                 ? '<a href="https://t.me/' + escHtml(jr.poster_telegram.replace('@','')) + '" target="_blank" rel="noopener" style="color:#F07020;text-decoration:none;font-weight:600">@' + escHtml(jr.poster_telegram.replace('@','')) + '</a>'
-                : '<span style="color:#9ca3af;font-style:italic">mavjud emas</span>') +
+                : '<span style="color:#9ca3af;font-style:italic">' + t('unavailable') + '</span>') +
             '</span>' +
             '<span style="display:flex;align-items:center;gap:5px"><span style="color:#9ca3af">Instagram:</span>' +
               (jr.poster_instagram
                 ? '<a href="https://instagram.com/' + escHtml(jr.poster_instagram.replace('@','')) + '" target="_blank" rel="noopener" style="color:#F07020;text-decoration:none;font-weight:600">@' + escHtml(jr.poster_instagram.replace('@','')) + '</a>'
-                : '<span style="color:#9ca3af;font-style:italic">mavjud emas</span>') +
+                : '<span style="color:#9ca3af;font-style:italic">' + t('unavailable') + '</span>') +
             '</span>' +
           '</div>' +
           '<div class="job-actions">' +
