@@ -1,7 +1,7 @@
 const LANG = {
   uz: {
     appName: 'UstaMart',
-    tagline: "O'zbekistondagi qurilish xizmatlari platformasi",
+    tagline: "Qurilish xizmatlari platformasi",
     whoAreYou: 'Siz kimsiz?',
     customer: 'Mijoz', worker: 'Usta', shop: "Do'kon",
     back: 'Orqaga', home: 'Bosh sahifa',

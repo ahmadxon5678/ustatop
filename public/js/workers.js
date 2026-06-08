@@ -4,6 +4,27 @@ var _session = null;
 var _bookmarks = new Set();
 var _userCity = null;
 var _activeQuickFilter = 'all';
+var _selectedProfession = '';
+
+var WORKER_PROFESSIONS = [
+  '', 'Elektrik', 'Santexnik', 'Bo‘yoqchi', 'Plitka/bruschatka ustasi',
+  'G‘isht teruvchi', 'Betonchi', 'Tom yopuvchi', 'Payvandchi', 'Duradgor',
+  'Mebel ustasi', 'Eshik va deraza ustasi', 'Gipsokarton ustasi', 'Pol ustasi',
+  'Fasad ustasi', 'Issiqlik tizimi ustasi', 'Dizayner', 'Ventilyatsiya ustasi',
+  'Konditsioner ustasi', 'Hammom ta’miri', 'Shift ustasi', 'Zinapoya ustasi',
+  'Interyer dizayner', 'Umumiy ta’mirlash', 'Boshqa xizmatlar'
+];
+
+var PROFESSION_ALIASES = {
+  'boyoqchi': ['boyoqchi', 'bo‘yoqchi', "bo'yoqchi"],
+  'plitka/bruschatka ustasi': ['plitkachi', 'plitka ustasi', 'bruschatka ustasi', 'plitka/bruschatka ustasi'],
+  'gisht teruvchi': ['g‘isht teruvchi', "g'isht teruvchi", 'gisht teruvchi', 'quruvchi'],
+  'tom yopuvchi': ['tom yopuvchi', 'krovec'],
+  'payvandchi': ['payvandchi', 'temirchi'],
+  'gipsokarton ustasi': ['gipsokarton ustasi', 'gipschi'],
+  'umumiy tamirlash': ['umumiy ta’mirlash', "umumiy ta'mirlash", 'umumiy tamirlash', 'quruvchi'],
+  'boshqa xizmatlar': ['boshqa xizmatlar', 'boshqa']
+};
 
 // ── SVG icons ──
 var WSVG = {
@@ -20,9 +41,9 @@ var WSVG = {
   heartFill: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
   heartEmpty: '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>',
   trendingUp: '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>',
-  topStar: '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="#f59e0b" stroke="#f59e0b" stroke-width="0.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>',
-  allGrid: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>',
-  topBadgeStar: '<svg xmlns="http://www.w3.org/2000/svg" width="9" height="9" viewBox="0 0 24 24" fill="#fff" stroke="#fff" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>'
+  topStar: '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F07020" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6"/><path d="M6 20V10"/><path d="M18 20V4"/></svg>',
+  allGrid: '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="7" y1="8" x2="17" y2="8"/><line x1="7" y1="12" x2="17" y2="12"/><line x1="7" y1="16" x2="13" y2="16"/></svg>',
+  topBadgeStar: ''
 };
 
 // ── Boot ──
@@ -39,6 +60,7 @@ Promise.all([
   if (meData && meData.user) _userCity = meData.user.city || null;
 
   setupNav(_session);
+  initProfessionSelector();
 
   if (_session && _session.loggedIn) {
     fetch('/api/bookmarks').then(function(r) { return r.json(); }).then(function(bd) {
@@ -130,11 +152,99 @@ function onVerifiedChange() {
   applyFilters();
 }
 
+function normalizeProfession(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/[‘’`´]/g, "'")
+    .replace(/'/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function professionMatches(workerProfession, selectedProfession) {
+  if (!selectedProfession) return true;
+  var workerNorm = normalizeProfession(workerProfession);
+  var selectedNorm = normalizeProfession(selectedProfession);
+  if (workerNorm === selectedNorm) return true;
+  var aliases = PROFESSION_ALIASES[selectedNorm] || [];
+  return aliases.map(normalizeProfession).indexOf(workerNorm) !== -1;
+}
+
+function initProfessionSelector() {
+  renderProfessionOptions('');
+  updateProfessionTrigger();
+  document.addEventListener('click', function(e) {
+    var wrap = document.querySelector('.wkr-profession-wrap');
+    if (wrap && !wrap.contains(e.target)) closeProfessionSelector();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeProfessionSelector();
+  });
+}
+
+function getProfessionLabel(value) {
+  return value || t('allProfessions');
+}
+
+function updateProfessionTrigger() {
+  var text = document.getElementById('professionTriggerText');
+  var input = document.getElementById('filterProfession');
+  if (input) input.value = _selectedProfession;
+  if (text) text.textContent = getProfessionLabel(_selectedProfession);
+}
+
+function toggleProfessionSelector() {
+  var panel = document.getElementById('professionPanel');
+  var trigger = document.getElementById('professionTrigger');
+  if (!panel) return;
+  var open = panel.classList.toggle('open');
+  panel.setAttribute('aria-hidden', open ? 'false' : 'true');
+  if (trigger) trigger.classList.toggle('open', open);
+  if (open) {
+    renderProfessionOptions(document.getElementById('professionSearch').value || '');
+    setTimeout(function() {
+      var search = document.getElementById('professionSearch');
+      if (search) search.focus();
+    }, 30);
+  }
+}
+
+function closeProfessionSelector() {
+  var panel = document.getElementById('professionPanel');
+  var trigger = document.getElementById('professionTrigger');
+  if (!panel) return;
+  panel.classList.remove('open');
+  panel.setAttribute('aria-hidden', 'true');
+  if (trigger) trigger.classList.remove('open');
+}
+
+function selectProfession(value) {
+  _selectedProfession = value || '';
+  updateProfessionTrigger();
+  closeProfessionSelector();
+  applyFilters();
+}
+
+function renderProfessionOptions(query) {
+  var box = document.getElementById('professionOptions');
+  if (!box) return;
+  var q = normalizeProfession(query);
+  var list = WORKER_PROFESSIONS.filter(function(item) {
+    return !q || normalizeProfession(getProfessionLabel(item)).indexOf(q) !== -1;
+  });
+  box.innerHTML = list.map(function(item) {
+    var active = item === _selectedProfession;
+    return '<button type="button" class="wkr-profession-option' + (active ? ' active' : '') + '" onclick="selectProfession(\'' + escJs(item) + '\')">' +
+      escHtml(getProfessionLabel(item)) +
+    '</button>';
+  }).join('') || '<div class="wkr-profession-empty">Kasb topilmadi</div>';
+}
+
 // ── Filters ──
 function applyFilters() {
   var query      = document.getElementById('searchInput').value.trim();
   var region     = document.getElementById('filterRegion').value;
-  var profession = document.getElementById('filterProfession').value;
+  var profession = _selectedProfession || document.getElementById('filterProfession').value;
   var verified   = document.getElementById('filterVerified') && document.getElementById('filterVerified').checked;
 
   var filtered = _allWorkers;
@@ -152,7 +262,7 @@ function applyFilters() {
 
   if (verified)   filtered = filtered.filter(function(w) { return w.is_verified; });
   if (region)     filtered = filtered.filter(function(w) { return w.region === region; });
-  if (profession) filtered = filtered.filter(function(w) { return w.profession === profession; });
+  if (profession) filtered = filtered.filter(function(w) { return professionMatches(w.profession, profession); });
 
   if (query && _fuseSearch) {
     var res = _fuseSearch.search(query);
@@ -223,7 +333,7 @@ function workerCardHtml(w, isFeatured) {
 
   // TOP badge
   var topBadge = isFeatured
-    ? '<div class="wkr-top-badge">' + WSVG.topBadgeStar + 'TOP USTA</div>'
+    ? '<div class="wkr-top-badge">Tavsiya qilingan</div>'
     : '';
 
   // Bookmark button
@@ -303,7 +413,7 @@ function renderWorkers(workers) {
 
   if (featured.length === 0) {
     grid.innerHTML =
-      sectionHeader(WSVG.allGrid, 'BARCHA USTALAR') +
+      sectionHeader(WSVG.allGrid, 'Ustalar ro\'yxati') +
       '<div class="wkr-cards-grid">' +
         workers.map(function(w) { return workerCardHtml(w, false); }).join('') +
       '</div>';
@@ -311,14 +421,14 @@ function renderWorkers(workers) {
   }
 
   var html =
-    sectionHeader(WSVG.topStar, 'TOP USTALAR') +
+    sectionHeader(WSVG.topStar, 'Tavsiya qilingan ustalar') +
     '<div class="wkr-cards-grid" style="margin-bottom:32px">' +
       featured.map(function(w) { return workerCardHtml(w, true); }).join('') +
     '</div>';
 
   if (regular.length > 0) {
     html +=
-      sectionHeader(WSVG.allGrid, 'BARCHA USTALAR') +
+      sectionHeader(WSVG.allGrid, 'Barcha ustalar') +
       '<div class="wkr-cards-grid">' +
         regular.map(function(w) { return workerCardHtml(w, false); }).join('') +
       '</div>';
@@ -329,6 +439,10 @@ function renderWorkers(workers) {
 
 function escHtml(s) {
   return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function escJs(s) {
+  return String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 function openWorker(id) {

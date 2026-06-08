@@ -78,17 +78,23 @@
           <option>Qoraqalpog'iston</option>
         </select>
       </div>
-      <div class="wkr-select-wrap">
-        <span class="wkr-select-icon">
-          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
-        </span>
-        <select class="wkr-select" id="filterProfession" onchange="applyFilters()">
-          <option value="" data-lang="allProfessions">Barcha kasblar</option>
-          <option>Elektrik</option><option>Santexnik</option><option>Quruvchi</option>
-          <option>Bo'yoqchi</option><option>Plitkachi</option><option>Duradgor</option>
-          <option>Temirchi</option><option>Krovec</option><option>Gipschi</option>
-          <option>Dizayner</option><option>Boshqa</option>
-        </select>
+      <div class="wkr-profession-wrap">
+        <input type="hidden" id="filterProfession" value="">
+        <button type="button" class="wkr-profession-trigger" id="professionTrigger" onclick="toggleProfessionSelector()">
+          <span class="wkr-select-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </span>
+          <span id="professionTriggerText">Barcha kasblar</span>
+          <svg class="wkr-profession-chevron" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div class="wkr-profession-panel" id="professionPanel" aria-hidden="true">
+          <div class="wkr-profession-panel-head">
+            <strong>Kasbni tanlang</strong>
+            <button type="button" onclick="closeProfessionSelector()" aria-label="Yopish">×</button>
+          </div>
+          <input class="wkr-profession-search" type="text" id="professionSearch" placeholder="Kasb qidirish..." oninput="renderProfessionOptions(this.value)">
+          <div class="wkr-profession-options" id="professionOptions"></div>
+        </div>
       </div>
     </div>
 
